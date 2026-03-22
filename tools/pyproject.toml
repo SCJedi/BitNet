@@ -1,0 +1,19 @@
+[build-system]
+requires = ["setuptools>=64"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "bitnet-tools"
+version = "0.1.0"
+description = "CLI tools powered by a local BitNet model"
+requires-python = ">= 3.10"
+dependencies = []
+
+[project.scripts]
+bt-summarize = "bitnet_tools.cli.summarize:main"
+bt-extract = "bitnet_tools.cli.extract:main"
+bt-classify = "bitnet_tools.cli.classify:main"
+bt-rewrite = "bitnet_tools.cli.rewrite:main"
+bt-jsonify = "bitnet_tools.cli.jsonify:main"
+bt-tldr = "bitnet_tools.cli.tldr:main"
+bt-namegen = "bitnet_tools.cli.namegen:main"
