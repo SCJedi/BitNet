@@ -1,9 +1,9 @@
-"""bt-cron: Natural language to cron expression converter using BitNet.
+"""hone-cron: Natural language to cron expression converter using local AI.
 
 Bidirectional:
-  echo "every weekday at 9am" | bt-cron          → 0 9 * * 1-5
-  echo "0 9 * * 1-5" | bt-cron --explain         → "Every weekday at 9:00 AM"
-  echo "every day at 3pm" | bt-cron --validate    → expression + next 3 run times
+  echo "every weekday at 9am" | hone-cron          → 0 9 * * 1-5
+  echo "0 9 * * 1-5" | hone-cron --explain         → "Every weekday at 9:00 AM"
+  echo "every day at 3pm" | hone-cron --validate    → expression + next 3 run times
 """
 
 import argparse
@@ -381,9 +381,9 @@ def get_input(args) -> str:
 
 def main():
     parser = argparse.ArgumentParser(
-        prog="bt-cron",
+        prog="hone-cron",
         description="Convert natural language to cron expressions (and back)",
-        epilog='Example: echo "every weekday at 9am" | bt-cron',
+        epilog='Example: echo "every weekday at 9am" | hone-cron',
     )
     parser.add_argument(
         "--explain", "-e", action="store_true",

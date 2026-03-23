@@ -1,4 +1,4 @@
-"""bt-rewrite: Rewrite text in a given style using BitNet."""
+"""hone-rewrite: Rewrite text in a given style using local AI."""
 
 import argparse
 import sys
@@ -33,9 +33,9 @@ def get_input(args):
 
 def main():
     parser = argparse.ArgumentParser(
-        prog="bt-rewrite",
-        description="Rewrite text in a given style using a local BitNet model",
-        epilog="Example: echo 'hey fix the bug pls' | bt-rewrite --style formal",
+        prog="hone-rewrite",
+        description="Rewrite text in a given style using a local AI model",
+        epilog="Example: echo 'hey fix the bug pls' | hone-rewrite --style formal",
     )
     parser.add_argument(
         "--style", "-s", required=True, choices=list(STYLE_PROMPTS.keys()),

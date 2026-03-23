@@ -1,4 +1,4 @@
-"""bt-tldr: Smart TL;DR for diffs, logs, errors, and general text."""
+"""hone-tldr: Smart TL;DR for diffs, logs, errors, and general text."""
 
 import argparse
 import re
@@ -78,9 +78,9 @@ def get_input(args):
 
 def main():
     parser = argparse.ArgumentParser(
-        prog="bt-tldr",
+        prog="hone-tldr",
         description="Smart TL;DR for diffs, logs, errors, and general text",
-        epilog="Example: git diff | bt-tldr",
+        epilog="Example: git diff | hone-tldr",
     )
     parser.add_argument(
         "--mode", "-m", choices=list(MODE_PROMPTS.keys()),

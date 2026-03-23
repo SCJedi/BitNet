@@ -1,8 +1,8 @@
-"""Tests for bt-changelog: log parsing, grouping, formatting, and CLI."""
+"""Tests for hone-changelog: log parsing, grouping, formatting, and CLI."""
 
 import pytest
 from datetime import date
-from bitnet_tools.cli.changelog import (
+from hone_tools.cli.changelog import (
     parse_log_line,
     parse_log,
     group_by_type,
@@ -408,7 +408,7 @@ class TestPipeline:
         commits = parse_log(log_text)
         clean_descriptions_fallback(commits)
         groups = group_by_type(commits)
-        from bitnet_tools.cli.changelog import FORMATTERS
+        from hone_tools.cli.changelog import FORMATTERS
         formatter = FORMATTERS[fmt]
         return formatter(groups, version=version, date_str=date_str)
 

@@ -1,4 +1,4 @@
-"""bt-jsonify: Convert unstructured text to JSON using BitNet."""
+"""hone-jsonify: Convert unstructured text to JSON using local AI."""
 
 import argparse
 import json
@@ -38,9 +38,9 @@ def parse_json_object(text: str) -> dict:
 
 def main():
     parser = argparse.ArgumentParser(
-        prog="bt-jsonify",
-        description="Convert unstructured text to JSON using a local BitNet model",
-        epilog="Example: echo 'John Doe, age 30, NYC' | bt-jsonify --fields name,age,city",
+        prog="hone-jsonify",
+        description="Convert unstructured text to JSON using a local AI model",
+        epilog="Example: echo 'John Doe, age 30, NYC' | hone-jsonify --fields name,age,city",
     )
     parser.add_argument(
         "--fields", "-f", required=True,

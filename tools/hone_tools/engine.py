@@ -1,7 +1,7 @@
 """Core inference engine: subprocess wrapper for llama-cli.
 
 Supports two modes:
-  - BitNet llama-cli (CPU, raw completion, older build)
+  - CPU llama-cli (raw completion, older build)
   - Standalone llama.cpp (GPU, chat mode with single-turn for Qwen3.5+)
 """
 
@@ -210,7 +210,7 @@ def complete(
             cmd.extend(["-ngl", "0"])
         timeout = 60  # GPU models may need longer for first load
     else:
-        # Original BitNet llama-cli mode (CPU, raw completion)
+        # CPU llama-cli mode (raw completion)
         cmd = [
             str(LLAMA_CLI),
             "-m", str(MODEL_PATH),

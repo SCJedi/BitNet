@@ -8,7 +8,7 @@ Date: 2026-03-18
 - Failed (unfixed): 2 (model limitations)
 - Bugs found and fixed: 8
 
-## Tool: bt-classify
+## Tool: hone-classify
 
 ### Tests
 | # | Category | Input | Expected | Actual | Status |
@@ -32,7 +32,7 @@ Date: 2026-03-18
 
 ---
 
-## Tool: bt-extract
+## Tool: hone-extract
 
 ### Tests
 | # | Category | Input | Expected | Actual | Status |
@@ -50,7 +50,7 @@ Date: 2026-03-18
 *PASS with note: Tests 4 and 7 show model limitations (missed extraction, hallucinated result) but code handles output correctly.
 
 ### Bugs Found & Fixed
-1. **Unhandled FileNotFoundError**: Same pattern as bt-classify. Fixed.
+1. **Unhandled FileNotFoundError**: Same pattern as hone-classify. Fixed.
 
 ### Known Model Limitations
 - Phone extraction misses some formats like (800) 555-0199
@@ -58,7 +58,7 @@ Date: 2026-03-18
 
 ---
 
-## Tool: bt-summarize
+## Tool: hone-summarize
 
 ### Tests
 | # | Category | Input | Expected | Actual | Status |
@@ -78,7 +78,7 @@ Date: 2026-03-18
 
 ---
 
-## Tool: bt-jsonify
+## Tool: hone-jsonify
 
 ### Tests
 | # | Category | Input | Expected | Actual | Status |
@@ -97,7 +97,7 @@ Date: 2026-03-18
 
 ---
 
-## Tool: bt-rewrite
+## Tool: hone-rewrite
 
 ### Tests
 | # | Category | Input | Expected | Actual | Status |
@@ -120,7 +120,7 @@ Date: 2026-03-18
 
 ---
 
-## Tool: bt-tldr
+## Tool: hone-tldr
 
 ### Tests
 | # | Category | Input | Expected | Actual | Status |
@@ -141,7 +141,7 @@ Date: 2026-03-18
 
 ---
 
-## Tool: bt-namegen
+## Tool: hone-namegen
 
 ### Tests
 | # | Category | Input | Expected | Actual | Status |
@@ -180,16 +180,16 @@ Date: 2026-03-18
 
 1. **Model hallucination on minimal input**: When given single-word or very short input, the model fabricates detailed content. This is inherent to the BitNet-b1.58-2B model and cannot be fixed in the CLI wrapper.
 2. **Model repetition loops**: The 2B model sometimes enters output loops. The `_dedup_repetition()` fix mitigates this for sentence-level repetition but cannot prevent all token-level loops.
-3. **bt-namegen camelCase**: The model sometimes returns concatenated words without separators (e.g., "validateuseremail"), making the formatter unable to apply proper camelCase.
-4. **bt-namegen format echo**: The model occasionally returns the format name itself (e.g., "snake_case") instead of a generated name.
-5. **bt-extract false positives**: When no items exist to extract, the model may return input text or hallucinated items rather than an empty list.
+3. **hone-namegen camelCase**: The model sometimes returns concatenated words without separators (e.g., "validateuseremail"), making the formatter unable to apply proper camelCase.
+4. **hone-namegen format echo**: The model occasionally returns the format name itself (e.g., "snake_case") instead of a generated name.
+5. **hone-extract false positives**: When no items exist to extract, the model may return input text or hallucinated items rather than an empty list.
 6. **Phone number extraction**: Model misses some phone formats like parenthesized area codes.
 
 ## Recommendations
 
 1. **Add `--max-tokens` flag**: Let users override token limits for tools where model output is truncated.
-2. **Add regex post-validation for bt-extract**: Validate extracted emails/URLs/phones against regex patterns to filter hallucinated results.
+2. **Add regex post-validation for hone-extract**: Validate extracted emails/URLs/phones against regex patterns to filter hallucinated results.
 3. **Consider prompt engineering**: More explicit "If none found, return []" or "Return ONLY one of these exact labels:" phrasing may reduce hallucination.
-4. **Add `--verbose` flag**: Print detected mode (for bt-tldr) and token count to stderr for debugging.
+4. **Add `--verbose` flag**: Print detected mode (for hone-tldr) and token count to stderr for debugging.
 5. **Refactor get_input**: Extract the shared `get_input` function into a common module to avoid duplication across 7 files.
-6. **Add bt-namegen word splitting**: Use a word-splitting heuristic (e.g., dictionary lookup) to break concatenated words for proper camelCase formatting.
+6. **Add hone-namegen word splitting**: Use a word-splitting heuristic (e.g., dictionary lookup) to break concatenated words for proper camelCase formatting.

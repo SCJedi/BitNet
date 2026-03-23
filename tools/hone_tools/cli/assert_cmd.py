@@ -1,4 +1,4 @@
-"""bt-assert: Natural language test assertions with binary pass/fail output.
+"""hone-assert: Natural language test assertions with binary pass/fail output.
 
 Evaluates whether a value satisfies a natural-language assertion.
 Exit code 0 = PASS, exit code 1 = FAIL.
@@ -283,9 +283,9 @@ def _get_assertion(args) -> str:
 
 def main():
     parser = argparse.ArgumentParser(
-        prog="bt-assert",
+        prog="hone-assert",
         description="Natural language test assertions with binary pass/fail output",
-        epilog='Example: echo "status code is 200" | bt-assert --val "200"',
+        epilog='Example: echo "status code is 200" | hone-assert --val "200"',
     )
     parser.add_argument(
         "--val", "-v", required=True,

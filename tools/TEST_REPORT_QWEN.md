@@ -6,7 +6,7 @@ Total tests: 28 | Passed: 26 | Failed: 2 (both fixed) | Bugs fixed: 2
 
 ## Results by Tool
 
-### bt-classify
+### hone-classify
 | # | Input | Expected | Actual | Status |
 |---|-------|----------|--------|--------|
 | 1 | "I love this product, it works great!" --preset sentiment | positive | positive | PASS |
@@ -20,7 +20,7 @@ Notes: Previously failing Unicode test (#4) now passes cleanly -- no raw model o
 
 ---
 
-### bt-extract
+### hone-extract
 | # | Input | Expected | Actual | Status |
 |---|-------|----------|--------|--------|
 | 1 | emails in text --type emails | john@example.com, jane@test.org | Both found | PASS |
@@ -34,7 +34,7 @@ Notes: Major improvement over BitNet 2B. Phone extraction (#2) now finds both nu
 
 ---
 
-### bt-summarize
+### hone-summarize
 | # | Input | Expected | Actual | Status |
 |---|-------|----------|--------|--------|
 | 1 | 3-sentence paragraph --sentences 1 | 1-sentence summary | Clean, accurate single sentence | PASS |
@@ -46,7 +46,7 @@ Notes: Major improvement over BitNet 2B. Phone extraction (#2) now finds both nu
 
 ---
 
-### bt-jsonify
+### hone-jsonify
 | # | Input | Expected | Actual | Status |
 |---|-------|----------|--------|--------|
 | 1 | "John Doe, age 30, NYC" --fields name,age,city | Correct JSON | `{"name":"John Doe","age":30,"city":"NYC"}` | PASS |
@@ -58,7 +58,7 @@ Notes: Major improvement over BitNet 2B. Phone extraction (#2) now finds both nu
 
 ---
 
-### bt-rewrite
+### hone-rewrite
 | # | Input | Expected | Actual | Status |
 |---|-------|----------|--------|--------|
 | 1 | informal text --style formal | Formal rewrite | "Please address the critical CSS rendering issues on the login page immediately." | PASS |
@@ -71,7 +71,7 @@ Notes: All previously failing tests (formal truncation, bullet truncation) now p
 
 ---
 
-### bt-tldr
+### hone-tldr
 | # | Input | Expected | Actual | Status |
 |---|-------|----------|--------|--------|
 | 1 | diff text (auto-detect) | Diff summary | "The code now calls a compute() function and returns its result instead of always returning None" | PASS |
@@ -83,7 +83,7 @@ Bug found: Qwen outputs markdown headings before content. With default `stop_at=
 
 ---
 
-### bt-namegen
+### hone-namegen
 | # | Input | Expected | Actual | Status |
 |---|-------|----------|--------|--------|
 | 1 | "fix the broken login page css alignment" --style branch | kebab-case | fix-login-page-css | PASS |
@@ -138,5 +138,5 @@ Notes: Variable/snake_case (#3) now works correctly -- no longer echoes the form
 | 2 | `engine.py` `clean_output()` | Qwen outputs markdown headings (`### Heading`) and bold markers (`**text**`) that leak into tool output | Added regex stripping: `re.sub(r"^#{1,6}\s+[^\n]*\n*", "")` for headings and `re.sub(r"\*\*([^*]+)\*\*", r"\1")` for bold markers |
 
 ### Files Modified
-- `C:\Users\ericl\Documents\Projects\BitNet\tools\bitnet_tools\cli\tldr.py` (line 65: added `stop_at=None`)
-- `C:\Users\ericl\Documents\Projects\BitNet\tools\bitnet_tools\engine.py` (lines 113-117: added markdown heading and bold stripping)
+- `C:\Users\ericl\Documents\Projects\BitNet\tools\hone_tools\cli\tldr.py` (line 65: added `stop_at=None`)
+- `C:\Users\ericl\Documents\Projects\BitNet\tools\hone_tools\engine.py` (lines 113-117: added markdown heading and bold stripping)

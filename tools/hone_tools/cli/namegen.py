@@ -1,4 +1,4 @@
-"""bt-namegen: Generate code names (branches, functions, etc.) using BitNet."""
+"""hone-namegen: Generate code names (branches, functions, etc.) using local AI."""
 
 import argparse
 import re
@@ -178,9 +178,9 @@ def get_input(args):
 
 def main():
     parser = argparse.ArgumentParser(
-        prog="bt-namegen",
-        description="Generate code names using a local BitNet model",
-        epilog="Example: echo 'fix the broken login page css' | bt-namegen --style branch",
+        prog="hone-namegen",
+        description="Generate code names using a local AI model",
+        epilog="Example: echo 'fix the broken login page css' | hone-namegen --style branch",
     )
     parser.add_argument(
         "--style", "-s", required=True, choices=list(STYLE_PROMPTS.keys()),

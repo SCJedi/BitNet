@@ -1,12 +1,12 @@
-"""bt-gitignore: Generate .gitignore rules from natural language or technology keywords.
+"""hone-gitignore: Generate .gitignore rules from natural language or technology keywords.
 
 Template-first approach: built-in templates for common technologies,
 model fallback only for unusual/custom requests.
 
 Usage:
-  echo "python flask docker" | bt-gitignore          -> comprehensive .gitignore
-  echo "node react typescript" | bt-gitignore         -> node-focused .gitignore
-  echo "add rules for compiled C files" | bt-gitignore --append  -> just the new rules
+  echo "python flask docker" | hone-gitignore          -> comprehensive .gitignore
+  echo "node react typescript" | hone-gitignore         -> node-focused .gitignore
+  echo "add rules for compiled C files" | hone-gitignore --append  -> just the new rules
 """
 
 import argparse
@@ -657,9 +657,9 @@ def get_input(args) -> str:
 
 def main():
     parser = argparse.ArgumentParser(
-        prog="bt-gitignore",
+        prog="hone-gitignore",
         description="Generate .gitignore rules from natural language or technology keywords",
-        epilog='Example: echo "python flask docker" | bt-gitignore',
+        epilog='Example: echo "python flask docker" | hone-gitignore',
     )
     parser.add_argument(
         "--append", "-a", action="store_true",

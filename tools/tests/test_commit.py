@@ -1,7 +1,7 @@
-"""Tests for bt-commit: diff parsing, scope inference, type inference, and formatting."""
+"""Tests for hone-commit: diff parsing, scope inference, type inference, and formatting."""
 
 import pytest
-from bitnet_tools.cli.commit import (
+from hone_tools.cli.commit import (
     parse_diff, infer_scope, infer_type, build_summary,
     build_prompt, format_commit, VALID_TYPES,
 )
@@ -127,7 +127,7 @@ index aaa..bbb 100644
 +## Installation
 +
 +```bash
-+pip install bitnet-tools
++pip install hone-cli
 +```
 """
 
@@ -189,9 +189,9 @@ index aaa..bbb 100644
 --- a/pyproject.toml
 +++ b/pyproject.toml
 @@ -10,6 +10,7 @@ dependencies = []
- bt-summarize = "bitnet_tools.cli.summarize:main"
- bt-extract = "bitnet_tools.cli.extract:main"
-+bt-commit = "bitnet_tools.cli.commit:main"
+ hone-summarize = "hone_tools.cli.summarize:main"
+ hone-extract = "hone_tools.cli.extract:main"
++hone-commit = "hone_tools.cli.commit:main"
 """
 
 DIFF_DELETE_ONLY = """\

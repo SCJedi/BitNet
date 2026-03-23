@@ -1,4 +1,4 @@
-"""Tests for bt-assert CLI tool.
+"""Tests for hone-assert CLI tool.
 
 Tests the pre-processing logic (deterministic, no model needed).
 Each test pipes an assertion via stdin and checks the exit code.
@@ -9,7 +9,7 @@ import subprocess
 import sys
 
 PYTHON = sys.executable
-CMD_PREFIX = [PYTHON, "-m", "bitnet_tools.cli.assert_cmd"]
+CMD_PREFIX = [PYTHON, "-m", "hone_tools.cli.assert_cmd"]
 TOOLS_DIR = r"C:\Users\ericl\Documents\Projects\BitNet\tools"
 
 passed = 0
@@ -18,7 +18,7 @@ errors = []
 
 
 def run_assert(assertion: str, value: str, verbose: bool = False, timeout: int = 10):
-    """Run bt-assert and return (exit_code, stdout, stderr)."""
+    """Run hone-assert and return (exit_code, stdout, stderr)."""
     cmd = CMD_PREFIX + ["--val", value]
     if verbose:
         cmd.append("--verbose")

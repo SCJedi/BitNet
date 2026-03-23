@@ -1,4 +1,4 @@
-"""bt-changelog: Convert git log output into formatted release notes/changelog.
+"""hone-changelog: Convert git log output into formatted release notes/changelog.
 
 Hybrid approach:
   - Pre-process: parse git log lines, detect conventional commit types
@@ -7,9 +7,9 @@ Hybrid approach:
   - Post-process: format into the selected output style
 
 Usage:
-  git log v1.0..v1.1 --oneline | bt-changelog
-  git log --oneline -20 | bt-changelog
-  git log --oneline -10 | bt-changelog --format bullet
+  git log v1.0..v1.1 --oneline | hone-changelog
+  git log --oneline -20 | hone-changelog
+  git log --oneline -10 | hone-changelog --format bullet
 """
 
 import argparse
@@ -368,9 +368,9 @@ def get_input(args) -> str:
 
 def main():
     parser = argparse.ArgumentParser(
-        prog="bt-changelog",
+        prog="hone-changelog",
         description="Convert git log output into formatted release notes",
-        epilog="Example: git log v1.0..v1.1 --oneline | bt-changelog",
+        epilog="Example: git log v1.0..v1.1 --oneline | hone-changelog",
     )
     parser.add_argument(
         "--format", "-f",

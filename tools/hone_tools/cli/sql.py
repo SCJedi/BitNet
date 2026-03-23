@@ -1,10 +1,10 @@
-"""bt-sql: Natural language to SQL query converter using BitNet.
+"""hone-sql: Natural language to SQL query converter using local AI.
 
 Bidirectional:
-  echo "all users" | bt-sql                              -> SELECT * FROM users;
-  echo "top 10 orders by amount" | bt-sql                -> SELECT * FROM orders ORDER BY amount DESC LIMIT 10;
-  echo "count users by country" | bt-sql --schema "users(id, name, email, country)" -> precise query
-  echo "SELECT ..." | bt-sql --explain                   -> plain English explanation
+  echo "all users" | hone-sql                              -> SELECT * FROM users;
+  echo "top 10 orders by amount" | hone-sql                -> SELECT * FROM orders ORDER BY amount DESC LIMIT 10;
+  echo "count users by country" | hone-sql --schema "users(id, name, email, country)" -> precise query
+  echo "SELECT ..." | hone-sql --explain                   -> plain English explanation
 """
 
 import argparse
@@ -343,9 +343,9 @@ def get_input(args) -> str:
 
 def main():
     parser = argparse.ArgumentParser(
-        prog="bt-sql",
+        prog="hone-sql",
         description="Convert natural language to SQL queries (and back)",
-        epilog='Example: echo "top 10 users by signups" | bt-sql',
+        epilog='Example: echo "top 10 users by signups" | hone-sql',
     )
     parser.add_argument(
         "--schema", "-s", metavar="SCHEMA",

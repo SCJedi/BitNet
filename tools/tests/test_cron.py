@@ -1,8 +1,8 @@
-"""Tests for bt-cron CLI tool.
+"""Tests for hone-cron CLI tool.
 
 Two test phases:
 1. Unit tests: validation, next-run-time calculation, extraction (no model needed)
-2. Integration tests: full pipeline through the model (requires BitNet)
+2. Integration tests: full pipeline through the model (requires model)
 """
 
 import re
@@ -12,7 +12,7 @@ from datetime import datetime, timedelta
 
 # Add tools dir to path so we can import directly
 sys.path.insert(0, r"C:\Users\ericl\Documents\Projects\BitNet\tools")
-from bitnet_tools.cli.cron import (
+from hone_tools.cli.cron import (
     validate_cron,
     is_cron_expression,
     next_run_times,
@@ -23,7 +23,7 @@ from bitnet_tools.cli.cron import (
 )
 
 PYTHON = sys.executable
-CMD_PREFIX = [PYTHON, "-m", "bitnet_tools.cli.cron"]
+CMD_PREFIX = [PYTHON, "-m", "hone_tools.cli.cron"]
 TOOLS_DIR = r"C:\Users\ericl\Documents\Projects\BitNet\tools"
 
 passed = 0
@@ -44,7 +44,7 @@ def check(name, ok, detail=""):
 
 
 def run_cron(input_text, extra_args=None, timeout=120):
-    """Run bt-cron and return (exit_code, stdout, stderr)."""
+    """Run hone-cron and return (exit_code, stdout, stderr)."""
     cmd = CMD_PREFIX + (extra_args or [])
     result = subprocess.run(
         cmd,

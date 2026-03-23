@@ -1,8 +1,8 @@
-"""Tests for bt-sql CLI tool.
+"""Tests for hone-sql CLI tool.
 
 Two test phases:
 1. Unit tests: schema parsing, SQL validation, extraction (no model needed)
-2. Integration tests: full pipeline through the model (requires BitNet)
+2. Integration tests: full pipeline through the model (requires model)
 """
 
 import re
@@ -11,7 +11,7 @@ import sys
 
 # Add tools dir to path so we can import directly
 sys.path.insert(0, r"C:\Users\ericl\Documents\Projects\BitNet\tools")
-from bitnet_tools.cli.sql import (
+from hone_tools.cli.sql import (
     parse_schema,
     format_schema_for_prompt,
     validate_sql,
@@ -22,7 +22,7 @@ from bitnet_tools.cli.sql import (
 )
 
 PYTHON = sys.executable
-CMD_PREFIX = [PYTHON, "-m", "bitnet_tools.cli.sql"]
+CMD_PREFIX = [PYTHON, "-m", "hone_tools.cli.sql"]
 TOOLS_DIR = r"C:\Users\ericl\Documents\Projects\BitNet\tools"
 
 passed = 0
@@ -43,7 +43,7 @@ def check(name, ok, detail=""):
 
 
 def run_sql(input_text, extra_args=None, timeout=120):
-    """Run bt-sql and return (exit_code, stdout, stderr)."""
+    """Run hone-sql and return (exit_code, stdout, stderr)."""
     cmd = CMD_PREFIX + (extra_args or [])
     result = subprocess.run(
         cmd,

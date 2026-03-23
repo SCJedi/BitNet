@@ -1,29 +1,48 @@
 [build-system]
-requires = ["setuptools>=64"]
+requires = ["setuptools>=68.0"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "bitnet-tools"
+name = "hone-cli"
 version = "0.1.0"
-description = "CLI tools powered by a local BitNet model"
-requires-python = ">= 3.10"
-dependencies = []
+description = "17 CLI tools powered by local AI inference"
+readme = "README.md"
+license = {text = "MIT"}
+requires-python = ">=3.10"
+authors = [
+    {name = "SCJedi", email = "starcraft.jedi@gmail.com"}
+]
+keywords = ["llm", "cli", "tools", "local-ai", "llama-cpp", "pipeline"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Environment :: Console",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Topic :: Text Processing",
+]
+
+[project.urls]
+Homepage = "https://github.com/SCJedi/hone-cli"
+Repository = "https://github.com/SCJedi/hone-cli"
 
 [project.scripts]
-bt-summarize = "bitnet_tools.cli.summarize:main"
-bt-extract = "bitnet_tools.cli.extract:main"
-bt-classify = "bitnet_tools.cli.classify:main"
-bt-rewrite = "bitnet_tools.cli.rewrite:main"
-bt-jsonify = "bitnet_tools.cli.jsonify:main"
-bt-tldr = "bitnet_tools.cli.tldr:main"
-bt-namegen = "bitnet_tools.cli.namegen:main"
-bt-commit = "bitnet_tools.cli.commit:main"
-bt-regex = "bitnet_tools.cli.regex:main"
-bt-cron = "bitnet_tools.cli.cron:main"
-bt-sql = "bitnet_tools.cli.sql:main"
-bt-explain = "bitnet_tools.cli.explain:main"
-bt-assert = "bitnet_tools.cli.assert_cmd:main"
-bt-gitignore = "bitnet_tools.cli.gitignore:main"
-bt-env = "bitnet_tools.cli.env:main"
-bt-mock = "bitnet_tools.cli.mock:main"
-bt-changelog = "bitnet_tools.cli.changelog:main"
+hone = "hone_tools.cli.hone_cmd:main"
+hone-classify = "hone_tools.cli.classify:main"
+hone-extract = "hone_tools.cli.extract:main"
+hone-summarize = "hone_tools.cli.summarize:main"
+hone-jsonify = "hone_tools.cli.jsonify:main"
+hone-rewrite = "hone_tools.cli.rewrite:main"
+hone-tldr = "hone_tools.cli.tldr:main"
+hone-namegen = "hone_tools.cli.namegen:main"
+hone-commit = "hone_tools.cli.commit:main"
+hone-regex = "hone_tools.cli.regex:main"
+hone-cron = "hone_tools.cli.cron:main"
+hone-sql = "hone_tools.cli.sql:main"
+hone-explain = "hone_tools.cli.explain:main"
+hone-assert = "hone_tools.cli.assert_cmd:main"
+hone-changelog = "hone_tools.cli.changelog:main"
+hone-env = "hone_tools.cli.env:main"
+hone-mock = "hone_tools.cli.mock:main"
+hone-gitignore = "hone_tools.cli.gitignore:main"

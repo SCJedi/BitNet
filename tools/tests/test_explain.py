@@ -1,18 +1,18 @@
-"""Tests for bt-explain CLI tool.
+"""Tests for hone-explain CLI tool.
 
 Two test phases:
 1. Unit tests: detect_mode() and postprocess() — no model needed
-2. Integration tests: full pipeline through the model (requires BitNet)
+2. Integration tests: full pipeline through the model (requires model)
 """
 
 import subprocess
 import sys
 
 sys.path.insert(0, r"C:\Users\ericl\Documents\Projects\BitNet\tools")
-from bitnet_tools.cli.explain import detect_mode, postprocess, MODES
+from hone_tools.cli.explain import detect_mode, postprocess, MODES
 
 PYTHON = sys.executable
-CMD_PREFIX = [PYTHON, "-m", "bitnet_tools.cli.explain"]
+CMD_PREFIX = [PYTHON, "-m", "hone_tools.cli.explain"]
 TOOLS_DIR = r"C:\Users\ericl\Documents\Projects\BitNet\tools"
 
 passed = 0
@@ -33,7 +33,7 @@ def check(name, ok, detail=""):
 
 
 def run_explain(input_text, extra_args=None, timeout=120):
-    """Run bt-explain and return (exit_code, stdout, stderr)."""
+    """Run hone-explain and return (exit_code, stdout, stderr)."""
     cmd = CMD_PREFIX + (extra_args or [])
     result = subprocess.run(
         cmd,
@@ -108,7 +108,7 @@ check("detect SQL query", detect_mode(
 ) == "code")
 
 check("detect JSON", detect_mode(
-    '{"name": "bitnet-tools", "version": "0.1.0", "dependencies": {"numpy": ">=1.20"}}'
+    '{"name": "hone-cli", "version": "0.1.0", "dependencies": {"numpy": ">=1.20"}}'
 ) == "code")
 
 # --- Config detection ---

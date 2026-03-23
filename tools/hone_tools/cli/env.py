@@ -1,4 +1,4 @@
-"""bt-env: Scan code and generate .env templates with discovered environment variables.
+"""hone-env: Scan code and generate .env templates with discovered environment variables.
 
 Hybrid approach: regex-first for extraction, model for descriptions (--comments).
 Reads from stdin or -i FILE. Outputs in dotenv, json, yaml, or shell format.
@@ -328,9 +328,9 @@ def get_input(args) -> str:
 
 def main():
     parser = argparse.ArgumentParser(
-        prog="bt-env",
+        prog="hone-env",
         description="Scan code and generate .env templates with discovered environment variables",
-        epilog='Example: cat app.py | bt-env --format dotenv',
+        epilog='Example: cat app.py | hone-env --format dotenv',
     )
     parser.add_argument(
         "--format", "-f", default="dotenv",

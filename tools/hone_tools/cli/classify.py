@@ -1,4 +1,4 @@
-"""bt-classify: Classify text into categories using BitNet."""
+"""hone-classify: Classify text into categories using local AI."""
 
 import argparse
 import difflib
@@ -72,9 +72,9 @@ def fuzzy_match(output: str, labels: list[str]) -> str:
 
 def main():
     parser = argparse.ArgumentParser(
-        prog="bt-classify",
-        description="Classify text into categories using a local BitNet model",
-        epilog="Example: echo 'Great product!' | bt-classify --preset sentiment",
+        prog="hone-classify",
+        description="Classify text into categories using a local AI model",
+        epilog="Example: echo 'Great product!' | hone-classify --preset sentiment",
     )
     parser.add_argument(
         "--labels", "-l",

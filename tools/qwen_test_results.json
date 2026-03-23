@@ -1,6 +1,6 @@
 [
   {
-    "tool": "bt-classify",
+    "tool": "hone-classify",
     "id": 1,
     "category": "Happy path",
     "description": "Bug classification",
@@ -11,7 +11,7 @@
     "bitnet_result": "bug"
   },
   {
-    "tool": "bt-classify",
+    "tool": "hone-classify",
     "id": 2,
     "category": "Happy path",
     "description": "Sentiment preset",
@@ -22,7 +22,7 @@
     "bitnet_result": "positive"
   },
   {
-    "tool": "bt-classify",
+    "tool": "hone-classify",
     "id": 5,
     "category": "Adversarial",
     "description": "Prompt injection",
@@ -33,7 +33,7 @@
     "bitnet_result": "question"
   },
   {
-    "tool": "bt-classify",
+    "tool": "hone-classify",
     "id": 8,
     "category": "Special chars",
     "description": "Unicode/quotes",
@@ -44,7 +44,7 @@
     "bitnet_result": "japanese (raw leak)->FIXED"
   },
   {
-    "tool": "bt-classify",
+    "tool": "hone-classify",
     "id": 9,
     "category": "Happy path",
     "description": "Urgency critical",
@@ -55,7 +55,7 @@
     "bitnet_result": "critical"
   },
   {
-    "tool": "bt-extract",
+    "tool": "hone-extract",
     "id": 1,
     "category": "Happy path",
     "description": "Email extraction",
@@ -66,7 +66,7 @@
     "bitnet_result": "Both found"
   },
   {
-    "tool": "bt-extract",
+    "tool": "hone-extract",
     "id": 2,
     "category": "Happy path",
     "description": "Name extraction",
@@ -77,7 +77,7 @@
     "bitnet_result": "Both found"
   },
   {
-    "tool": "bt-extract",
+    "tool": "hone-extract",
     "id": 5,
     "category": "Happy path",
     "description": "Date extraction",
@@ -88,7 +88,7 @@
     "bitnet_result": "Both found"
   },
   {
-    "tool": "bt-summarize",
+    "tool": "hone-summarize",
     "id": 1,
     "category": "Happy path",
     "description": "3-sentence summary",
@@ -99,7 +99,7 @@
     "bitnet_result": "Correct (was repeated, fixed)"
   },
   {
-    "tool": "bt-summarize",
+    "tool": "hone-summarize",
     "id": 2,
     "category": "Happy path",
     "description": "2-sentence summary",
@@ -110,7 +110,7 @@
     "bitnet_result": "Deduped (was repeated)"
   },
   {
-    "tool": "bt-summarize",
+    "tool": "hone-summarize",
     "id": 5,
     "category": "Edge case",
     "description": "Zero sentences",
@@ -121,7 +121,7 @@
     "bitnet_result": "Error (was accepted, FIXED)"
   },
   {
-    "tool": "bt-jsonify",
+    "tool": "hone-jsonify",
     "id": 1,
     "category": "Happy path",
     "description": "Structured extraction",
@@ -132,7 +132,7 @@
     "bitnet_result": "{\"name\":\"John Doe\",\"age\":30,\"city\":\"New York City\"}"
   },
   {
-    "tool": "bt-jsonify",
+    "tool": "hone-jsonify",
     "id": 6,
     "category": "Adversarial",
     "description": "Prompt injection JSON",
@@ -143,7 +143,7 @@
     "bitnet_result": "Was {\"hacked\":true}, FIXED"
   },
   {
-    "tool": "bt-rewrite",
+    "tool": "hone-rewrite",
     "id": 1,
     "category": "Happy path",
     "description": "Formal rewrite",
@@ -154,7 +154,7 @@
     "bitnet_result": "Was truncated, FIXED"
   },
   {
-    "tool": "bt-rewrite",
+    "tool": "hone-rewrite",
     "id": 2,
     "category": "Happy path",
     "description": "Bullet rewrite",
@@ -165,7 +165,7 @@
     "bitnet_result": "Was truncated, FIXED"
   },
   {
-    "tool": "bt-rewrite",
+    "tool": "hone-rewrite",
     "id": 3,
     "category": "Happy path",
     "description": "Commit message",
@@ -176,7 +176,7 @@
     "bitnet_result": "Correct"
   },
   {
-    "tool": "bt-tldr",
+    "tool": "hone-tldr",
     "id": 1,
     "category": "Happy path",
     "description": "Diff summary",
@@ -187,7 +187,7 @@
     "bitnet_result": "Changed from None to value"
   },
   {
-    "tool": "bt-tldr",
+    "tool": "hone-tldr",
     "id": 3,
     "category": "Happy path",
     "description": "Traceback explanation",
@@ -198,7 +198,7 @@
     "bitnet_result": "Clear explanation with fix"
   },
   {
-    "tool": "bt-tldr",
+    "tool": "hone-tldr",
     "id": 8,
     "category": "Adversarial",
     "description": "Prompt injection",
@@ -209,7 +209,7 @@
     "bitnet_result": "Partial reference but no compliance"
   },
   {
-    "tool": "bt-namegen",
+    "tool": "hone-namegen",
     "id": 1,
     "category": "Happy path",
     "description": "Branch name",
@@ -220,7 +220,7 @@
     "bitnet_result": "fix-broken-login-page-css-alignment"
   },
   {
-    "tool": "bt-namegen",
+    "tool": "hone-namegen",
     "id": 4,
     "category": "Happy path",
     "description": "Class name",
@@ -231,7 +231,7 @@
     "bitnet_result": "Was empty, FIXED"
   },
   {
-    "tool": "bt-namegen",
+    "tool": "hone-namegen",
     "id": 8,
     "category": "Happy path",
     "description": "OAuth branch name",

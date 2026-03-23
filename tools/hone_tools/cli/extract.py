@@ -1,4 +1,4 @@
-"""bt-extract: Extract structured data from text using BitNet."""
+"""hone-extract: Extract structured data from text using local AI."""
 
 import argparse
 import json
@@ -111,9 +111,9 @@ def parse_json_array(text: str) -> list:
 
 def main():
     parser = argparse.ArgumentParser(
-        prog="bt-extract",
-        description="Extract structured data from text using a local BitNet model",
-        epilog="Example: echo 'Contact john@example.com' | bt-extract --type emails",
+        prog="hone-extract",
+        description="Extract structured data from text using a local AI model",
+        epilog="Example: echo 'Contact john@example.com' | hone-extract --type emails",
     )
     parser.add_argument(
         "--type", "-t", required=True, choices=TYPES,

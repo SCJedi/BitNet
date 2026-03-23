@@ -1,4 +1,4 @@
-"""Tests for bt-env CLI tool.
+"""Tests for hone-env CLI tool.
 
 Tests the regex extraction pipeline and output formatting.
 No model calls needed for the core tests (--comments flag excluded).
@@ -9,7 +9,7 @@ import subprocess
 import sys
 
 PYTHON = sys.executable
-CMD_PREFIX = [PYTHON, "-m", "bitnet_tools.cli.env"]
+CMD_PREFIX = [PYTHON, "-m", "hone_tools.cli.env"]
 TOOLS_DIR = r"C:\Users\ericl\Documents\Projects\BitNet\tools"
 
 passed = 0
@@ -18,7 +18,7 @@ errors = []
 
 
 def run_env(input_text, extra_args=None, timeout=30):
-    """Run bt-env with the given input and return (exit_code, stdout, stderr)."""
+    """Run hone-env with the given input and return (exit_code, stdout, stderr)."""
     cmd = CMD_PREFIX + (extra_args or [])
     result = subprocess.run(
         cmd,

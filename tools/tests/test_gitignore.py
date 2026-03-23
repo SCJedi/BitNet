@@ -1,8 +1,8 @@
-"""Tests for bt-gitignore CLI tool.
+"""Tests for hone-gitignore CLI tool.
 
 Two test phases:
 1. Unit tests: template matching, keyword extraction, dedup, generation (no model)
-2. Integration tests: full pipeline including model fallback (requires BitNet)
+2. Integration tests: full pipeline including model fallback (requires model)
 """
 
 import subprocess
@@ -12,7 +12,7 @@ import os
 
 # Add tools dir to path so we can import directly
 sys.path.insert(0, r"C:\Users\ericl\Documents\Projects\BitNet\tools")
-from bitnet_tools.cli.gitignore import (
+from hone_tools.cli.gitignore import (
     _normalize_keyword,
     _extract_keywords,
     _match_templates,
@@ -23,7 +23,7 @@ from bitnet_tools.cli.gitignore import (
 )
 
 PYTHON = sys.executable
-CMD_PREFIX = [PYTHON, "-m", "bitnet_tools.cli.gitignore"]
+CMD_PREFIX = [PYTHON, "-m", "hone_tools.cli.gitignore"]
 TOOLS_DIR = r"C:\Users\ericl\Documents\Projects\BitNet\tools"
 
 passed = 0
@@ -44,7 +44,7 @@ def check(name, ok, detail=""):
 
 
 def run_gitignore(input_text, extra_args=None, timeout=120):
-    """Run bt-gitignore and return (exit_code, stdout, stderr)."""
+    """Run hone-gitignore and return (exit_code, stdout, stderr)."""
     cmd = CMD_PREFIX + (extra_args or [])
     result = subprocess.run(
         cmd,

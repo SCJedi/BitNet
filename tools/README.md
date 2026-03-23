@@ -1,186 +1,238 @@
-# bitnet-tools
+# hone-cli
 
 17 CLI tools powered by a local LLM. Pipe text in, get structured results out. No API keys, no cloud — everything runs on your GPU.
 
 **Default model:** Qwen3.5-4B-Q4_K_M (2.54 GB, ~70 tok/s on RTX 3060)
 **Fallback model:** BitNet-b1.58-2B-4T (CPU inference via BitNet llama-cli)
 
-## Quick Start
+## Installation
 
 ```bash
-# Install (editable, from the tools/ directory)
-cd BitNet/tools
-pip install -e .
+# From PyPI (coming soon)
+pip install hone-cli
 
-# Verify model and CLI are detected
-echo "hello world" | bt-summarize
+# From source (development)
+git clone https://github.com/SCJedi/hone-cli.git
+cd hone-cli
+pip install -e .
 ```
 
-The tools auto-detect the best available model. Qwen3.5-4B with GPU is preferred; BitNet 2B on CPU is the fallback.
+## Quick Setup
+
+hone-cli needs two things: a **llama.cpp binary** and a **GGUF model file**. The fastest way to configure them:
+
+```bash
+# Point to your llama-cli and model via environment variables
+export HONE_CLI=/path/to/llama-cli
+export HONE_MODEL=/path/to/model.gguf
+
+# Verify it works
+echo "hello world" | hone-summarize
+```
+
+Or create a persistent config file:
+
+```bash
+# Linux/macOS: ~/.config/hone/config.json
+# Windows: %APPDATA%/hone/config.json
+mkdir -p ~/.config/hone
+cat > ~/.config/hone/config.json << 'EOF'
+{
+    "cli": "/path/to/llama-cli",
+    "model": "/path/to/model.gguf",
+    "use_gpu": true,
+    "is_chat_model": true
+}
+EOF
+```
+
+If installed inside the [BitNet repo](https://github.com/microsoft/BitNet), the tools auto-detect the model and binary automatically.
 
 ## Tools
 
 ### Text Processing
 
-**bt-classify** — Categorize text (sentiment, urgency, custom labels)
+**hone-classify** — Categorize text (sentiment, urgency, custom labels)
 ```bash
-echo "the app crashes on submit" | bt-classify --labels bug,feature,question
-echo "I love this product!" | bt-classify --preset sentiment
+echo "the app crashes on submit" | hone-classify --labels bug,feature,question
+echo "I love this product!" | hone-classify --preset sentiment
 ```
 
-**bt-extract** — Pull emails, names, dates, URLs, phones with regex post-validation
+**hone-extract** — Pull emails, names, dates, URLs, phones with regex post-validation
 ```bash
-echo "Contact john@example.com or 212-555-0100" | bt-extract --type emails
-cat contacts.txt | bt-extract --type phones --json
+echo "Contact john@example.com or 212-555-0100" | hone-extract --type emails
+cat contacts.txt | hone-extract --type phones --json
 ```
 
-**bt-summarize** — Condense text to N sentences
+**hone-summarize** — Condense text to N sentences
 ```bash
-cat article.txt | bt-summarize
-cat report.txt | bt-summarize --sentences 3
+cat article.txt | hone-summarize
+cat report.txt | hone-summarize --sentences 3
 ```
 
-**bt-jsonify** — Unstructured text to structured JSON
+**hone-jsonify** — Unstructured text to structured JSON
 ```bash
-echo "John Doe, age 30, lives in NYC" | bt-jsonify --fields name,age,city
-echo "Order #1234, $49.99, shipped" | bt-jsonify --fields order_id,price,status
+echo "John Doe, age 30, lives in NYC" | hone-jsonify --fields name,age,city
+echo "Order #1234, $49.99, shipped" | hone-jsonify --fields order_id,price,status
 ```
 
-**bt-rewrite** — Style transforms (formal, simple, bullets, commit, punctuate)
+**hone-rewrite** — Style transforms (formal, simple, bullets, commit, punctuate)
 ```bash
-echo "hey fix the css bug pls" | bt-rewrite --style formal
-echo "fixed login page on mobile" | bt-rewrite --style commit
+echo "hey fix the css bug pls" | hone-rewrite --style formal
+echo "fixed login page on mobile" | hone-rewrite --style commit
 ```
 
 ### Developer Workflow
 
-**bt-tldr** — Dev-focused summaries (auto-detects diff/log/error/generic)
+**hone-tldr** — Dev-focused summaries (auto-detects diff/log/error/generic)
 ```bash
-git diff | bt-tldr
-cat error.log | bt-tldr --mode error
+git diff | hone-tldr
+cat error.log | hone-tldr --mode error
 ```
 
-**bt-namegen** — Generate branch/function/class/variable/file names
+**hone-namegen** — Generate branch/function/class/variable/file names
 ```bash
-echo "fix broken login page css" | bt-namegen --style branch
-echo "validate user email address" | bt-namegen --style function
+echo "fix broken login page css" | hone-namegen --style branch
+echo "validate user email address" | hone-namegen --style function
 ```
 
-**bt-commit** — Git diff to conventional commit message
+**hone-commit** — Git diff to conventional commit message
 ```bash
-git diff --cached | bt-commit
-git diff HEAD~1 | bt-commit --scope auth
+git diff --cached | hone-commit
+git diff HEAD~1 | hone-commit --scope auth
 ```
 
-**bt-changelog** — Git log to release notes, grouped by commit type
+**hone-changelog** — Git log to release notes, grouped by commit type
 ```bash
-git log --oneline v1.0..v1.1 | bt-changelog
-git log --oneline -20 | bt-changelog --format markdown
+git log --oneline v1.0..v1.1 | hone-changelog
+git log --oneline -20 | hone-changelog --format markdown
 ```
 
-**bt-gitignore** — Template-first .gitignore generator
+**hone-gitignore** — Template-first .gitignore generator
 ```bash
-bt-gitignore --lang python
-bt-gitignore --lang node,rust --append
+hone-gitignore --lang python
+hone-gitignore --lang node,rust --append
 ```
 
-**bt-env** — Scan code for env vars, generate .env templates
+**hone-env** — Scan code for env vars, generate .env templates
 ```bash
-bt-env --scan src/
-bt-env --scan . --output .env.example
+hone-env --scan src/
+hone-env --scan . --output .env.example
 ```
 
 ### Code Generation
 
-**bt-regex** — Natural language to regex with --test validation
+**hone-regex** — Natural language to regex with --test validation
 ```bash
-echo "match email addresses" | bt-regex
-echo "US phone numbers" | bt-regex --test "call 212-555-0100"
+echo "match email addresses" | hone-regex
+echo "US phone numbers" | hone-regex --test "call 212-555-0100"
 ```
 
-**bt-cron** — Natural language to cron with --explain and --validate
+**hone-cron** — Natural language to cron with --explain and --validate
 ```bash
-echo "every weekday at 9am" | bt-cron
-echo "0 */2 * * *" | bt-cron --explain
+echo "every weekday at 9am" | hone-cron
+echo "0 */2 * * *" | hone-cron --explain
 ```
 
-**bt-sql** — Natural language to SQL with schema awareness
+**hone-sql** — Natural language to SQL with schema awareness
 ```bash
-echo "users who signed up this month" | bt-sql --table users
-echo "top 10 orders by total" | bt-sql --schema schema.sql
+echo "users who signed up this month" | hone-sql --table users
+echo "top 10 orders by total" | hone-sql --schema schema.sql
 ```
 
-**bt-mock** — Generate mock data from type descriptions (JSON/CSV/SQL)
+**hone-mock** — Generate mock data from type descriptions (JSON/CSV/SQL)
 ```bash
-echo "user with name, email, age" | bt-mock --count 5
-echo "product with sku, price, category" | bt-mock --format csv
+echo "user with name, email, age" | hone-mock --count 5
+echo "product with sku, price, category" | hone-mock --format csv
 ```
 
-**bt-assert** — Natural language test assertions, binary pass/fail for CI
+**hone-assert** — Natural language test assertions, binary pass/fail for CI
 ```bash
-echo '{"status":200}' | bt-assert "status code is 200"
-curl -s api/health | bt-assert "response contains ok"
+echo '{"status":200}' | hone-assert "status code is 200"
+curl -s api/health | hone-assert "response contains ok"
 ```
 
 ### Universal
 
-**bt-explain** — Universal explainer for errors, code, config, CLI
+**hone-explain** — Universal explainer for errors, code, config, CLI
 ```bash
-echo "ECONNREFUSED 127.0.0.1:5432" | bt-explain
-echo "git rebase -i HEAD~3" | bt-explain
+echo "ECONNREFUSED 127.0.0.1:5432" | hone-explain
+echo "git rebase -i HEAD~3" | hone-explain
 ```
 
 ## Configuration
+
+### Resolution Order
+
+Configuration is resolved from three sources (highest priority first):
+
+1. **Environment variables** -- `HONE_CLI`, `HONE_MODEL` (override everything)
+2. **User config file** -- `~/.config/hone/config.json` (persistent settings)
+3. **BitNet repo auto-detection** -- for in-repo development (walks up to find `CMakeLists.txt`)
 
 ### Environment Variables
 
 | Variable | Default | Description |
 |----------|---------|-------------|
-| `BITNET_MODEL` | Auto-detected | Path to GGUF model file |
-| `BITNET_CLI` | Auto-detected | Path to llama-cli binary |
-| `BITNET_THREADS` | `4` | CPU threads for inference |
-| `BITNET_CTX_SIZE` | `2048` | Context window size |
+| `HONE_MODEL` | Auto-detected | Path to GGUF model file |
+| `HONE_CLI` | Auto-detected | Path to llama-cli binary |
+| `HONE_THREADS` | `4` | CPU threads for inference |
+| `HONE_CTX_SIZE` | `2048` | Context window size |
 
-### Model Selection
+### Config File
 
-The tools search for models in this order:
-1. `BITNET_MODEL` / `BITNET_CLI` environment variables (if set)
-2. `models/qwen3.5-4b/Qwen3.5-4B-Q4_K_M.gguf` + `tools/llama-cpp-latest/bin/llama-cli.exe` (GPU)
-3. `models/BitNet-b1.58-2B-4T/ggml-model-i2_s.gguf` + `build/bin/llama-cli.exe` (CPU)
+Location: `~/.config/hone/config.json` (Linux/macOS) or `%APPDATA%/hone/config.json` (Windows)
+
+```json
+{
+    "cli": "/path/to/llama-cli",
+    "model": "/path/to/model.gguf",
+    "threads": 4,
+    "ctx_size": 2048,
+    "use_gpu": true,
+    "is_chat_model": true
+}
+```
+
+### In-Repo Auto-Detection
+
+When installed inside the BitNet repo, the tools search for models automatically:
+1. `models/qwen3.5-4b/Qwen3.5-4B-Q4_K_M.gguf` + `tools/llama-cpp-latest/bin/llama-cli.exe` (GPU)
+2. `models/BitNet-b1.58-2B-4T/ggml-model-i2_s.gguf` + `build/bin/llama-cli.exe` (CPU)
 
 ## Piping Examples
 
 ```bash
 # Classify and extract in a pipeline
-cat email.txt | bt-classify --preset topic
-cat email.txt | bt-extract --type emails --json | jq '.[0]'
+cat email.txt | hone-classify --preset topic
+cat email.txt | hone-extract --type emails --json | jq '.[0]'
 
 # Summarize a git diff
-git diff HEAD~5 | bt-tldr
+git diff HEAD~5 | hone-tldr
 
 # Convert unstructured data to JSON for processing
-cat business_card.txt | bt-jsonify --fields name,title,company,phone,email
+cat business_card.txt | hone-jsonify --fields name,title,company,phone,email
 
 # Generate a branch name from a ticket title
-echo "Users can't log in after password reset" | bt-namegen --style branch
+echo "Users can't log in after password reset" | hone-namegen --style branch
 
 # Conventional commit from staged changes
-git diff --cached | bt-commit
+git diff --cached | hone-commit
 
 # Release notes from git history
-git log --oneline v1.0..HEAD | bt-changelog
+git log --oneline v1.0..HEAD | hone-changelog
 
 # Generate a .env template from source
-bt-env --scan src/ --output .env.example
+hone-env --scan src/ --output .env.example
 
 # Mock data for testing
-echo "user with id, name, email, role" | bt-mock --count 10 --format csv
+echo "user with id, name, email, role" | hone-mock --count 10 --format csv
 
 # Validate cron expressions
-echo "0 9 * * 1-5" | bt-cron --explain
+echo "0 9 * * 1-5" | hone-cron --explain
 
 # CI assertion
-curl -s localhost:8080/health | bt-assert "response is healthy"
+curl -s localhost:8080/health | hone-assert "response is healthy"
 ```
 
 All tools read from stdin by default, or from a file with `-i FILE`.
@@ -191,23 +243,23 @@ All tools read from stdin by default, or from a file with `-i FILE`.
 
 | Tool | Tests | Pass Rate | Notes |
 |------|-------|-----------|-------|
-| bt-classify | 48 | 96% | 2 debatable edge cases on ambiguous boundaries |
-| bt-extract | 25 | 100% | Regex post-validation eliminates hallucinations |
-| bt-summarize | 22 | 100% | Echo detection + min-length guard |
-| bt-jsonify | 21 | 100% | Prompt injection defense |
-| bt-rewrite | 20 | 100% | Style-specific stop tokens |
-| bt-tldr | 36 | 100% | 3-tier error detection |
-| bt-namegen | 24 | 100% | Space-separated prompt strategy |
-| bt-commit | 60 | 100% | Conventional commit format enforcement |
-| bt-regex | 23 | 100% | Pattern validation with test input |
-| bt-cron | 110 | 100% | Explain + validate modes |
-| bt-sql | 80 | 100% | Schema-aware generation |
-| bt-explain | 66 | 100% | Multi-domain detection |
-| bt-assert | 60 | 100% | Binary exit codes for CI |
-| bt-changelog | 53 | 100% | Commit type grouping |
-| bt-env | 21 | 100% | Cross-file env var scanning |
-| bt-mock | 64 | 100% | JSON/CSV/SQL output formats |
-| bt-gitignore | 119 | 100% | Template-first with fallback |
+| hone-classify | 48 | 96% | 2 debatable edge cases on ambiguous boundaries |
+| hone-extract | 25 | 100% | Regex post-validation eliminates hallucinations |
+| hone-summarize | 22 | 100% | Echo detection + min-length guard |
+| hone-jsonify | 21 | 100% | Prompt injection defense |
+| hone-rewrite | 20 | 100% | Style-specific stop tokens |
+| hone-tldr | 36 | 100% | 3-tier error detection |
+| hone-namegen | 24 | 100% | Space-separated prompt strategy |
+| hone-commit | 60 | 100% | Conventional commit format enforcement |
+| hone-regex | 23 | 100% | Pattern validation with test input |
+| hone-cron | 110 | 100% | Explain + validate modes |
+| hone-sql | 80 | 100% | Schema-aware generation |
+| hone-explain | 66 | 100% | Multi-domain detection |
+| hone-assert | 60 | 100% | Binary exit codes for CI |
+| hone-changelog | 53 | 100% | Commit type grouping |
+| hone-env | 21 | 100% | Cross-file env var scanning |
+| hone-mock | 64 | 100% | JSON/CSV/SQL output formats |
+| hone-gitignore | 119 | 100% | Template-first with fallback |
 
 Full details: [TEST_REPORT_FINAL.md](TEST_REPORT_FINAL.md)
 

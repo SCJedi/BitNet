@@ -1,4 +1,4 @@
-"""bt-regex: Generate regex patterns from natural language using BitNet."""
+"""hone-regex: Generate regex patterns from natural language using local AI."""
 
 import argparse
 import re
@@ -226,9 +226,9 @@ def get_input(args):
 
 def main():
     parser = argparse.ArgumentParser(
-        prog="bt-regex",
+        prog="hone-regex",
         description="Generate regex patterns from natural language",
-        epilog='Example: echo "email addresses" | bt-regex --test "hi john@x.com"',
+        epilog='Example: echo "email addresses" | hone-regex --test "hi john@x.com"',
     )
     parser.add_argument(
         "--flavor", "-f", default="python",

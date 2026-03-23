@@ -1,8 +1,8 @@
-"""Tests for bt-mock CLI tool.
+"""Tests for hone-mock CLI tool.
 
 Two test phases:
 1. Unit tests: type parsing, JSON parsing, variation, formatting (no model needed)
-2. Integration tests: full pipeline through the model (requires BitNet)
+2. Integration tests: full pipeline through the model (requires model)
 """
 
 import json
@@ -11,7 +11,7 @@ import sys
 
 # Add tools dir to path so we can import directly
 sys.path.insert(0, r"C:\Users\ericl\Documents\Projects\BitNet\tools")
-from bitnet_tools.cli.mock import (
+from hone_tools.cli.mock import (
     parse_type_description,
     parse_json_records,
     _ensure_fields,
@@ -23,7 +23,7 @@ from bitnet_tools.cli.mock import (
 )
 
 PYTHON = sys.executable
-CMD_PREFIX = [PYTHON, "-m", "bitnet_tools.cli.mock"]
+CMD_PREFIX = [PYTHON, "-m", "hone_tools.cli.mock"]
 TOOLS_DIR = r"C:\Users\ericl\Documents\Projects\BitNet\tools"
 
 passed = 0
@@ -44,7 +44,7 @@ def check(name, ok, detail=""):
 
 
 def run_mock(input_text, extra_args=None, timeout=120):
-    """Run bt-mock and return (exit_code, stdout, stderr)."""
+    """Run hone-mock and return (exit_code, stdout, stderr)."""
     cmd = CMD_PREFIX + (extra_args or [])
     result = subprocess.run(
         cmd,

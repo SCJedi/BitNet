@@ -1,4 +1,4 @@
-"""bt-summarize: Summarize text using BitNet."""
+"""hone-summarize: Summarize text using local AI."""
 
 import argparse
 import re
@@ -64,9 +64,9 @@ def _is_echo(text: str, original: str) -> bool:
 
 def main():
     parser = argparse.ArgumentParser(
-        prog="bt-summarize",
-        description="Summarize text using a local BitNet model",
-        epilog="Example: cat article.txt | bt-summarize --sentences 2",
+        prog="hone-summarize",
+        description="Summarize text using a local AI model",
+        epilog="Example: cat article.txt | hone-summarize --sentences 2",
     )
     parser.add_argument(
         "--sentences", "-s", type=int, default=1,

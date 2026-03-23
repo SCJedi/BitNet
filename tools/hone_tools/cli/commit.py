@@ -1,4 +1,4 @@
-"""bt-commit: Generate conventional commit messages from diffs using BitNet."""
+"""hone-commit: Generate conventional commit messages from diffs using local AI."""
 
 import argparse
 import os
@@ -414,9 +414,9 @@ def get_input(args) -> str:
 
 def main():
     parser = argparse.ArgumentParser(
-        prog="bt-commit",
+        prog="hone-commit",
         description="Generate conventional commit messages from diffs",
-        epilog="Example: git diff --staged | bt-commit",
+        epilog="Example: git diff --staged | hone-commit",
     )
     parser.add_argument(
         "--type", "-t", choices=VALID_TYPES, default=None,

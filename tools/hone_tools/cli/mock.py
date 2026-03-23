@@ -1,4 +1,4 @@
-"""bt-mock: Generate mock/fake data from type descriptions using BitNet."""
+"""hone-mock: Generate mock/fake data from type descriptions using local AI."""
 
 import argparse
 import copy
@@ -369,9 +369,9 @@ FORMATTERS = {
 
 def main():
     parser = argparse.ArgumentParser(
-        prog="bt-mock",
-        description="Generate mock/fake data from type descriptions using a local BitNet model",
-        epilog='Example: echo "User(name, email, age)" | bt-mock --count 5',
+        prog="hone-mock",
+        description="Generate mock/fake data from type descriptions using a local AI model",
+        epilog='Example: echo "User(name, email, age)" | hone-mock --count 5',
     )
     parser.add_argument(
         "--count", "-n", type=int, default=1,

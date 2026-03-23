@@ -1,4 +1,4 @@
-"""Tests for bt-regex CLI tool.
+"""Tests for hone-regex CLI tool.
 
 Tests the full pipeline: natural language -> regex pattern -> validation.
 Each test verifies:
@@ -12,7 +12,7 @@ import subprocess
 import sys
 
 PYTHON = sys.executable
-CMD_PREFIX = [PYTHON, "-m", "bitnet_tools.cli.regex"]
+CMD_PREFIX = [PYTHON, "-m", "hone_tools.cli.regex"]
 TOOLS_DIR = r"C:\Users\ericl\Documents\Projects\BitNet\tools"
 
 passed = 0
@@ -21,7 +21,7 @@ errors = []
 
 
 def run_regex(description, extra_args=None, timeout=120):
-    """Run bt-regex with the given description and return (exit_code, stdout, stderr)."""
+    """Run hone-regex with the given description and return (exit_code, stdout, stderr)."""
     cmd = CMD_PREFIX + (extra_args or [])
     result = subprocess.run(
         cmd,

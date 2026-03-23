@@ -1,4 +1,4 @@
-# BitNet Tools — Final Test Report
+# Hone — Final Test Report
 
 Date: 2026-03-23
 Model: Qwen3.5-4B-Q4_K_M (2.54 GB)
@@ -9,37 +9,37 @@ Inference: ~70 tok/s GPU via llama.cpp b8470
 
 - **852 total tests** across 17 tools
 - **~99.8% pass rate** (850/852)
-- 2 debatable classifications (bt-classify edge cases on ambiguous sentiment/urgency boundaries)
+- 2 debatable classifications (hone-classify edge cases on ambiguous sentiment/urgency boundaries)
 - 12 bugs found and fixed across 3 optimization rounds
 
 ## Per-Tool Results
 
 | Tool | Tests | Pass Rate | Notes |
 |------|-------|-----------|-------|
-| bt-classify | 48 | 96% | 2 debatable edge cases on ambiguous boundaries |
-| bt-extract | 25 | 100% | Regex post-validation eliminates hallucinations |
-| bt-summarize | 22 | 100% | Echo detection + min-length guard |
-| bt-jsonify | 21 | 100% | Prompt injection defense |
-| bt-rewrite | 20 | 100% | Style-specific stop tokens |
-| bt-tldr | 36 | 100% | 3-tier error detection |
-| bt-namegen | 24 | 100% | Space-separated prompt strategy |
-| bt-commit | 60 | 100% | Conventional commit format enforcement |
-| bt-regex | 23 | 100% | Pattern validation with test input |
-| bt-cron | 110 | 100% | Explain + validate modes |
-| bt-sql | 80 | 100% | Schema-aware generation |
-| bt-explain | 66 | 100% | Multi-domain detection |
-| bt-assert | 60 | 100% | Binary exit codes for CI |
-| bt-changelog | 53 | 100% | Commit type grouping |
-| bt-env | 21 | 100% | Cross-file env var scanning |
-| bt-mock | 64 | 100% | JSON/CSV/SQL output formats |
-| bt-gitignore | 119 | 100% | Template-first with fallback |
+| hone-classify | 48 | 96% | 2 debatable edge cases on ambiguous boundaries |
+| hone-extract | 25 | 100% | Regex post-validation eliminates hallucinations |
+| hone-summarize | 22 | 100% | Echo detection + min-length guard |
+| hone-jsonify | 21 | 100% | Prompt injection defense |
+| hone-rewrite | 20 | 100% | Style-specific stop tokens |
+| hone-tldr | 36 | 100% | 3-tier error detection |
+| hone-namegen | 24 | 100% | Space-separated prompt strategy |
+| hone-commit | 60 | 100% | Conventional commit format enforcement |
+| hone-regex | 23 | 100% | Pattern validation with test input |
+| hone-cron | 110 | 100% | Explain + validate modes |
+| hone-sql | 80 | 100% | Schema-aware generation |
+| hone-explain | 66 | 100% | Multi-domain detection |
+| hone-assert | 60 | 100% | Binary exit codes for CI |
+| hone-changelog | 53 | 100% | Commit type grouping |
+| hone-env | 21 | 100% | Cross-file env var scanning |
+| hone-mock | 64 | 100% | JSON/CSV/SQL output formats |
+| hone-gitignore | 119 | 100% | Template-first with fallback |
 | **Total** | **852** | **~99.8%** | |
 
 ---
 
 ## Per-Tool Detail
 
-### bt-classify (96% — 46/48)
+### hone-classify (96% — 46/48)
 
 **What it does:** Classifies text into one of a fixed set of labels. Supports custom `--labels` or built-in `--preset` label sets (sentiment, urgency, language, topic).
 
@@ -60,7 +60,7 @@ Inference: ~70 tok/s GPU via llama.cpp b8470
 
 ---
 
-### bt-extract (100% — 25/25)
+### hone-extract (100% — 25/25)
 
 **What it does:** Extracts structured data (emails, names, dates, URLs, phones) from text. Returns as newline-separated list or JSON array with `--json`.
 
@@ -81,7 +81,7 @@ Each extraction type has a regex validator that sanity-checks model output:
 
 ---
 
-### bt-summarize (100% — 22/22)
+### hone-summarize (100% — 22/22)
 
 **What it does:** Summarizes text to a specified number of sentences. Auto-detects when input is too short to summarize.
 
@@ -95,7 +95,7 @@ Each extraction type has a regex validator that sanity-checks model output:
 
 ---
 
-### bt-jsonify (100% — 21/21)
+### hone-jsonify (100% — 21/21)
 
 **What it does:** Converts unstructured text to JSON with user-specified fields. Missing fields default to null.
 
@@ -108,7 +108,7 @@ Each extraction type has a regex validator that sanity-checks model output:
 
 ---
 
-### bt-rewrite (100% — 20/20)
+### hone-rewrite (100% — 20/20)
 
 **What it does:** Rewrites text in a specified style: formal, simple, punctuate, bullets, or commit message.
 
@@ -121,7 +121,7 @@ Each extraction type has a regex validator that sanity-checks model output:
 
 ---
 
-### bt-tldr (100% — 36/36)
+### hone-tldr (100% — 36/36)
 
 **What it does:** Smart TL;DR with auto-detection of input type (diff, log, error traceback, generic text). Uses type-specific prompts.
 
@@ -139,7 +139,7 @@ Each extraction type has a regex validator that sanity-checks model output:
 
 ---
 
-### bt-namegen (100% — 24/24)
+### hone-namegen (100% — 24/24)
 
 **What it does:** Generates code names (branch, function, file, class, variable) from descriptions. Applies correct formatting (kebab-case, camelCase, PascalCase, snake_case).
 
@@ -153,7 +153,7 @@ Each extraction type has a regex validator that sanity-checks model output:
 
 ---
 
-### bt-commit (100% — 60/60)
+### hone-commit (100% — 60/60)
 
 **What it does:** Generates conventional commit messages from git diffs. Detects commit type (feat, fix, refactor, docs, test, chore), extracts scope, writes imperative-mood subject line and optional body.
 
@@ -167,7 +167,7 @@ Each extraction type has a regex validator that sanity-checks model output:
 
 ---
 
-### bt-regex (100% — 23/23)
+### hone-regex (100% — 23/23)
 
 **What it does:** Converts natural language descriptions to regular expressions. Optional `--test` flag validates the pattern against sample input.
 
@@ -181,7 +181,7 @@ Each extraction type has a regex validator that sanity-checks model output:
 
 ---
 
-### bt-cron (100% — 110/110)
+### hone-cron (100% — 110/110)
 
 **What it does:** Converts natural language to cron expressions, or explains/validates existing cron strings.
 
@@ -195,7 +195,7 @@ Each extraction type has a regex validator that sanity-checks model output:
 
 ---
 
-### bt-sql (100% — 80/80)
+### hone-sql (100% — 80/80)
 
 **What it does:** Converts natural language queries to SQL. Supports schema awareness via `--table` or `--schema` flags.
 
@@ -209,7 +209,7 @@ Each extraction type has a regex validator that sanity-checks model output:
 
 ---
 
-### bt-explain (100% — 66/66)
+### hone-explain (100% — 66/66)
 
 **What it does:** Universal explainer. Auto-detects input type (error message, code snippet, config file, CLI command) and provides a plain-English explanation.
 
@@ -223,7 +223,7 @@ Each extraction type has a regex validator that sanity-checks model output:
 
 ---
 
-### bt-assert (100% — 60/60)
+### hone-assert (100% — 60/60)
 
 **What it does:** Natural language test assertions. Reads input, evaluates assertion, returns binary pass/fail with exit code (0 = pass, 1 = fail). Designed for CI pipelines.
 
@@ -237,7 +237,7 @@ Each extraction type has a regex validator that sanity-checks model output:
 
 ---
 
-### bt-changelog (100% — 53/53)
+### hone-changelog (100% — 53/53)
 
 **What it does:** Converts git log output to structured release notes. Groups entries by commit type (features, fixes, refactors, etc.).
 
@@ -251,7 +251,7 @@ Each extraction type has a regex validator that sanity-checks model output:
 
 ---
 
-### bt-env (100% — 21/21)
+### hone-env (100% — 21/21)
 
 **What it does:** Scans source code for environment variable references and generates .env templates.
 
@@ -265,7 +265,7 @@ Each extraction type has a regex validator that sanity-checks model output:
 
 ---
 
-### bt-mock (100% — 64/64)
+### hone-mock (100% — 64/64)
 
 **What it does:** Generates mock/fixture data from type descriptions. Supports JSON, CSV, and SQL INSERT output formats.
 
@@ -280,7 +280,7 @@ Each extraction type has a regex validator that sanity-checks model output:
 
 ---
 
-### bt-gitignore (100% — 119/119)
+### hone-gitignore (100% — 119/119)
 
 **What it does:** Generates .gitignore files using built-in templates for common languages/frameworks. Falls back to LLM generation for unknown stacks.
 
@@ -302,7 +302,7 @@ Each extraction type has a regex validator that sanity-checks model output:
 - **Tests:** 52
 - **Pass rate:** 81% (42/52) before fixes, 96% after
 - **Bugs fixed:** 8
-- **Key issues:** Repetition loops, fuzzy_match leaking raw output, prompt injection vulnerability in bt-jsonify, max_tokens too conservative, aggressive stop tokens, no input validation
+- **Key issues:** Repetition loops, fuzzy_match leaking raw output, prompt injection vulnerability in hone-jsonify, max_tokens too conservative, aggressive stop tokens, no input validation
 
 ### Round 2: Qwen 3.5-4B (2026-03-22)
 - **Tests:** 28 (regression + new)
@@ -314,7 +314,7 @@ Each extraction type has a regex validator that sanity-checks model output:
 - **Tests:** 852 (comprehensive per-tool suites across all 17 tools)
 - **Pass rate:** ~99.8% (850/852)
 - **Bugs fixed:** 12 total across all rounds
-- **Key improvements:** Regex post-validation for bt-extract, echo detection for bt-summarize, space-separated prompts for bt-namegen, 3-tier error detection for bt-tldr, min-length guards, sentence count enforcement, template-first approach for bt-gitignore, binary exit codes for bt-assert
+- **Key improvements:** Regex post-validation for hone-extract, echo detection for hone-summarize, space-separated prompts for hone-namegen, 3-tier error detection for hone-tldr, min-length guards, sentence count enforcement, template-first approach for hone-gitignore, binary exit codes for hone-assert
 
 ### Cumulative Bug Fix Summary
 
@@ -352,7 +352,7 @@ Prompts get you 80% of the way. Post-processing gets you to 99%.
 
 ### 2. Ask for what the model can do, format it yourself
 
-The bt-namegen breakthrough: instead of asking for `camelCase` output (which small models struggle with), ask for space-separated words and apply formatting in code. This principle generalizes: never ask the model to handle formatting, structure, or constraint enforcement. Always do that in the wrapper.
+The hone-namegen breakthrough: instead of asking for `camelCase` output (which small models struggle with), ask for space-separated words and apply formatting in code. This principle generalizes: never ask the model to handle formatting, structure, or constraint enforcement. Always do that in the wrapper.
 
 ### 3. Different models fail differently
 
@@ -370,15 +370,15 @@ BitNet 2B needed `stop_at="\n\n"` to prevent runaway generation. Qwen 3.5-4B nee
 
 ### 6. Test adversarially from day one
 
-Prompt injection tests caught a real vulnerability in bt-jsonify (Round 1) where the model could be tricked into outputting arbitrary JSON fields. The fix (field filtering) is simple but would never have been found without adversarial testing.
+Prompt injection tests caught a real vulnerability in hone-jsonify (Round 1) where the model could be tricked into outputting arbitrary JSON fields. The fix (field filtering) is simple but would never have been found without adversarial testing.
 
 ### 7. Template-first beats LLM-first for structured output
 
-bt-gitignore and bt-cron demonstrated that using built-in templates/lookup tables as the primary path — with the LLM as fallback for unknown inputs — produces more reliable results than LLM-first approaches. The LLM handles the long tail; deterministic code handles the common cases.
+hone-gitignore and hone-cron demonstrated that using built-in templates/lookup tables as the primary path — with the LLM as fallback for unknown inputs — produces more reliable results than LLM-first approaches. The LLM handles the long tail; deterministic code handles the common cases.
 
 ### 8. Binary exit codes unlock CI integration
 
-bt-assert's design of returning exit code 0/1 instead of text output makes LLM-powered assertions composable with standard Unix tooling and CI pipelines. This pattern (LLM decides, code enforces the contract) applies broadly.
+hone-assert's design of returning exit code 0/1 instead of text output makes LLM-powered assertions composable with standard Unix tooling and CI pipelines. This pattern (LLM decides, code enforces the contract) applies broadly.
 
 ---
 
@@ -396,4 +396,4 @@ bt-assert's design of returning exit code 0/1 instead of text output makes LLM-p
 7. **No streaming** — output appears all at once after inference completes.
 8. **Windows-only tested** — paths and binary detection are configured for Windows. Would need path adjustments for Linux/macOS.
 9. **Model loading overhead** — first invocation loads the model (~2-3 seconds). Subsequent invocations in the same session may benefit from OS file cache.
-10. **No network access** — all tools run offline. bt-sql cannot validate against a live database; bt-env cannot verify that scanned vars are actually required at runtime.
+10. **No network access** — all tools run offline. hone-sql cannot validate against a live database; hone-env cannot verify that scanned vars are actually required at runtime.

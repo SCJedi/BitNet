@@ -1,4 +1,4 @@
-"""bt-explain: Universal explainer for technical content.
+"""hone-explain: Universal explainer for technical content.
 
 Pipe anything technical — errors, code, config, regex, CLI commands, logs —
 and get a plain-English explanation.
@@ -270,9 +270,9 @@ def get_input(args) -> str:
 
 def main():
     parser = argparse.ArgumentParser(
-        prog="bt-explain",
+        prog="hone-explain",
         description="Universal explainer: pipe any technical content, get a plain-English explanation",
-        epilog="Example: cat error.log | bt-explain",
+        epilog="Example: cat error.log | hone-explain",
     )
     parser.add_argument(
         "--mode", "-m", choices=list(MODES),
