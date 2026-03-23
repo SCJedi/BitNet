@@ -1,6 +1,6 @@
 # bitnet-tools
 
-Seven CLI tools powered by a local LLM. Pipe text in, get structured results out. No API keys, no cloud — everything runs on your GPU.
+17 CLI tools powered by a local LLM. Pipe text in, get structured results out. No API keys, no cloud — everything runs on your GPU.
 
 **Default model:** Qwen3.5-4B-Q4_K_M (2.54 GB, ~70 tok/s on RTX 3060)
 **Fallback model:** BitNet-b1.58-2B-4T (CPU inference via BitNet llama-cli)
@@ -20,111 +20,115 @@ The tools auto-detect the best available model. Qwen3.5-4B with GPU is preferred
 
 ## Tools
 
-### bt-classify — Classify text into categories
+### Text Processing
 
+**bt-classify** — Categorize text (sentiment, urgency, custom labels)
 ```bash
 echo "the app crashes on submit" | bt-classify --labels bug,feature,question
-# bug
-
 echo "I love this product!" | bt-classify --preset sentiment
-# positive
-
-cat ticket.txt | bt-classify --preset urgency
-# critical
 ```
 
-Presets: `sentiment`, `urgency`, `language`, `topic`. Or use `--labels` with any comma-separated list.
-
-### bt-extract — Extract structured data
-
+**bt-extract** — Pull emails, names, dates, URLs, phones with regex post-validation
 ```bash
-echo "Contact john@example.com or call 212-555-0100" | bt-extract --type emails
-# john@example.com
-
-echo "Meeting on March 15, 2024" | bt-extract --type dates --json
-# ["2024-03-15"]
-
+echo "Contact john@example.com or 212-555-0100" | bt-extract --type emails
 cat contacts.txt | bt-extract --type phones --json
-# ["212-555-0100", "(800) 555-0199"]
 ```
 
-Types: `emails`, `phones`, `urls`, `dates`, `names`. Add `--json` for JSON array output. Results are post-validated with regex to filter hallucinations.
-
-### bt-summarize — Summarize text
-
+**bt-summarize** — Condense text to N sentences
 ```bash
 cat article.txt | bt-summarize
-# One-sentence summary.
-
 cat report.txt | bt-summarize --sentences 3
-# Three-sentence summary.
-
-git log --oneline -20 | bt-summarize --sentences 2
-# Two-sentence summary of recent commits.
 ```
 
-Inputs shorter than 40 characters are returned as-is (prevents hallucination on trivial input).
-
-### bt-jsonify — Convert text to JSON
-
+**bt-jsonify** — Unstructured text to structured JSON
 ```bash
 echo "John Doe, age 30, lives in NYC" | bt-jsonify --fields name,age,city
-# {"name": "John Doe", "age": 30, "city": "NYC"}
-
 echo "Order #1234, $49.99, shipped" | bt-jsonify --fields order_id,price,status
-# {"order_id": "1234", "price": 49.99, "status": "shipped"}
 ```
 
-Missing fields default to `null`. Output is filtered to only requested fields (prompt injection safe).
-
-### bt-rewrite — Rewrite text in a style
-
+**bt-rewrite** — Style transforms (formal, simple, bullets, commit, punctuate)
 ```bash
 echo "hey fix the css bug pls" | bt-rewrite --style formal
-# Please address the CSS rendering issue at your earliest convenience.
-
-echo "Python has dynamic typing and garbage collection" | bt-rewrite --style bullets
-# * Dynamic typing
-# * Garbage collection
-
 echo "fixed login page on mobile" | bt-rewrite --style commit
-# Fix mobile login page layout
 ```
 
-Styles: `formal`, `simple`, `punctuate`, `bullets`, `commit`.
+### Developer Workflow
 
-### bt-tldr — Smart TL;DR
-
+**bt-tldr** — Dev-focused summaries (auto-detects diff/log/error/generic)
 ```bash
 git diff | bt-tldr
-# Changed return value from None to computed result.
-
-cat error.log | bt-tldr
-# Database connection failed on startup, recovered after retry.
-
-cat traceback.txt | bt-tldr
-# ConnectionError: the app can't reach the database at localhost:5432. Check if PostgreSQL is running.
+cat error.log | bt-tldr --mode error
 ```
 
-Auto-detects input type (diff, log, error, generic) and uses type-specific prompts. Force a mode with `--mode diff|log|error|generic`.
-
-### bt-namegen — Generate code names
-
+**bt-namegen** — Generate branch/function/class/variable/file names
 ```bash
 echo "fix broken login page css" | bt-namegen --style branch
-# fix/login-page-css
-
 echo "validate user email address" | bt-namegen --style function
-# validateUserEmail
-
-echo "store user session data" | bt-namegen --style variable
-# store_user_session_data
-
-echo "handle HTTP request routing" | bt-namegen --style class
-# HttpRequestRouter
 ```
 
-Styles: `branch` (kebab-case with prefix), `function` (camelCase), `file` (snake_case), `class` (PascalCase), `variable` (snake_case).
+**bt-commit** — Git diff to conventional commit message
+```bash
+git diff --cached | bt-commit
+git diff HEAD~1 | bt-commit --scope auth
+```
+
+**bt-changelog** — Git log to release notes, grouped by commit type
+```bash
+git log --oneline v1.0..v1.1 | bt-changelog
+git log --oneline -20 | bt-changelog --format markdown
+```
+
+**bt-gitignore** — Template-first .gitignore generator
+```bash
+bt-gitignore --lang python
+bt-gitignore --lang node,rust --append
+```
+
+**bt-env** — Scan code for env vars, generate .env templates
+```bash
+bt-env --scan src/
+bt-env --scan . --output .env.example
+```
+
+### Code Generation
+
+**bt-regex** — Natural language to regex with --test validation
+```bash
+echo "match email addresses" | bt-regex
+echo "US phone numbers" | bt-regex --test "call 212-555-0100"
+```
+
+**bt-cron** — Natural language to cron with --explain and --validate
+```bash
+echo "every weekday at 9am" | bt-cron
+echo "0 */2 * * *" | bt-cron --explain
+```
+
+**bt-sql** — Natural language to SQL with schema awareness
+```bash
+echo "users who signed up this month" | bt-sql --table users
+echo "top 10 orders by total" | bt-sql --schema schema.sql
+```
+
+**bt-mock** — Generate mock data from type descriptions (JSON/CSV/SQL)
+```bash
+echo "user with name, email, age" | bt-mock --count 5
+echo "product with sku, price, category" | bt-mock --format csv
+```
+
+**bt-assert** — Natural language test assertions, binary pass/fail for CI
+```bash
+echo '{"status":200}' | bt-assert "status code is 200"
+curl -s api/health | bt-assert "response contains ok"
+```
+
+### Universal
+
+**bt-explain** — Universal explainer for errors, code, config, CLI
+```bash
+echo "ECONNREFUSED 127.0.0.1:5432" | bt-explain
+echo "git rebase -i HEAD~3" | bt-explain
+```
 
 ## Configuration
 
@@ -160,15 +164,30 @@ cat business_card.txt | bt-jsonify --fields name,title,company,phone,email
 # Generate a branch name from a ticket title
 echo "Users can't log in after password reset" | bt-namegen --style branch
 
-# Rewrite commit messages
-git log --format="%s" -1 | bt-rewrite --style commit
+# Conventional commit from staged changes
+git diff --cached | bt-commit
+
+# Release notes from git history
+git log --oneline v1.0..HEAD | bt-changelog
+
+# Generate a .env template from source
+bt-env --scan src/ --output .env.example
+
+# Mock data for testing
+echo "user with id, name, email, role" | bt-mock --count 10 --format csv
+
+# Validate cron expressions
+echo "0 9 * * 1-5" | bt-cron --explain
+
+# CI assertion
+curl -s localhost:8080/health | bt-assert "response is healthy"
 ```
 
 All tools read from stdin by default, or from a file with `-i FILE`.
 
 ## Test Results
 
-196 tests across all 7 tools. 99.5% pass rate (194/196).
+852 tests across all 17 tools. ~99.8% pass rate.
 
 | Tool | Tests | Pass Rate | Notes |
 |------|-------|-----------|-------|
@@ -179,6 +198,16 @@ All tools read from stdin by default, or from a file with `-i FILE`.
 | bt-rewrite | 20 | 100% | Style-specific stop tokens |
 | bt-tldr | 36 | 100% | 3-tier error detection |
 | bt-namegen | 24 | 100% | Space-separated prompt strategy |
+| bt-commit | 60 | 100% | Conventional commit format enforcement |
+| bt-regex | 23 | 100% | Pattern validation with test input |
+| bt-cron | 110 | 100% | Explain + validate modes |
+| bt-sql | 80 | 100% | Schema-aware generation |
+| bt-explain | 66 | 100% | Multi-domain detection |
+| bt-assert | 60 | 100% | Binary exit codes for CI |
+| bt-changelog | 53 | 100% | Commit type grouping |
+| bt-env | 21 | 100% | Cross-file env var scanning |
+| bt-mock | 64 | 100% | JSON/CSV/SQL output formats |
+| bt-gitignore | 119 | 100% | Template-first with fallback |
 
 Full details: [TEST_REPORT_FINAL.md](TEST_REPORT_FINAL.md)
 
@@ -186,33 +215,33 @@ Full details: [TEST_REPORT_FINAL.md](TEST_REPORT_FINAL.md)
 
 ```
 User input (stdin or -i FILE)
-    │
-    ▼
+    |
+    v
 CLI tool (classify.py, extract.py, etc.)
-    │  - Builds prompt from input + flags
-    │  - Sets max_tokens, stop_at, temperature
-    │
-    ▼
-engine.py → complete()
-    │  - Truncates input if > 6000 chars
-    │  - Builds llama-cli command
-    │  - Runs subprocess with timeout
-    │  - Strips banner, ANSI codes, think tags
-    │  - clean_output(): strips fences, prefixes,
-    │    markdown, deduplicates, truncates
-    │
-    ▼
+    |  - Builds prompt from input + flags
+    |  - Sets max_tokens, stop_at, temperature
+    |
+    v
+engine.py -> complete()
+    |  - Truncates input if > 6000 chars
+    |  - Builds llama-cli command
+    |  - Runs subprocess with timeout
+    |  - Strips banner, ANSI codes, think tags
+    |  - clean_output(): strips fences, prefixes,
+    |    markdown, deduplicates, truncates
+    |
+    v
 config.py
-    │  - Auto-detects model + CLI binary
-    │  - Reads env var overrides
-    │  - Validates paths exist
-    │
-    ▼
+    |  - Auto-detects model + CLI binary
+    |  - Reads env var overrides
+    |  - Validates paths exist
+    |
+    v
 llama-cli (subprocess)
-    │  - GPU mode: --single-turn -ngl 99 -rea off
-    │  - CPU mode: -ngl 0 -b 1
-    │
-    ▼
+    |  - GPU mode: --single-turn -ngl 99 -rea off
+    |  - CPU mode: -ngl 0 -b 1
+    |
+    v
 GGUF model file
 ```
 

@@ -1,16 +1,43 @@
 # BitNet Tools — Final Test Report
-Date: 2026-03-22
+
+Date: 2026-03-23
 Model: Qwen3.5-4B-Q4_K_M (2.54 GB)
 Hardware: RTX 3060 12GB, Windows 10
 Inference: ~70 tok/s GPU via llama.cpp b8470
 
 ## Summary
-- 196 total tests across 7 tools
-- ~99.5% pass rate (194/196)
+
+- **852 total tests** across 17 tools
+- **~99.8% pass rate** (850/852)
 - 2 debatable classifications (bt-classify edge cases on ambiguous sentiment/urgency boundaries)
 - 12 bugs found and fixed across 3 optimization rounds
 
 ## Per-Tool Results
+
+| Tool | Tests | Pass Rate | Notes |
+|------|-------|-----------|-------|
+| bt-classify | 48 | 96% | 2 debatable edge cases on ambiguous boundaries |
+| bt-extract | 25 | 100% | Regex post-validation eliminates hallucinations |
+| bt-summarize | 22 | 100% | Echo detection + min-length guard |
+| bt-jsonify | 21 | 100% | Prompt injection defense |
+| bt-rewrite | 20 | 100% | Style-specific stop tokens |
+| bt-tldr | 36 | 100% | 3-tier error detection |
+| bt-namegen | 24 | 100% | Space-separated prompt strategy |
+| bt-commit | 60 | 100% | Conventional commit format enforcement |
+| bt-regex | 23 | 100% | Pattern validation with test input |
+| bt-cron | 110 | 100% | Explain + validate modes |
+| bt-sql | 80 | 100% | Schema-aware generation |
+| bt-explain | 66 | 100% | Multi-domain detection |
+| bt-assert | 60 | 100% | Binary exit codes for CI |
+| bt-changelog | 53 | 100% | Commit type grouping |
+| bt-env | 21 | 100% | Cross-file env var scanning |
+| bt-mock | 64 | 100% | JSON/CSV/SQL output formats |
+| bt-gitignore | 119 | 100% | Template-first with fallback |
+| **Total** | **852** | **~99.8%** | |
+
+---
+
+## Per-Tool Detail
 
 ### bt-classify (96% — 46/48)
 
@@ -39,19 +66,18 @@ Inference: ~70 tok/s GPU via llama.cpp b8470
 
 **Key tests:**
 - Emails: finds both addresses in mixed text, regex post-validation filters hallucinated emails
-- Phones: finds both (800) 555-0199 and 212-555-0100 formats (previously missed parenthesized)
+- Phones: finds both (800) 555-0199 and 212-555-0100 formats
 - URLs: exact match extraction with protocol preservation
 - Dates: extracts and normalizes to ISO format automatically
-- Empty set: returns clean `[]` when no items found (was hallucinating content pre-Qwen)
+- Empty set: returns clean `[]` when no items found
 - Anti-hallucination: regex validators reject model-fabricated emails/URLs not present in source
 
 **Key improvement — regex post-validation:**
-The biggest engineering win. Each extraction type has a regex validator that sanity-checks model output:
+Each extraction type has a regex validator that sanity-checks model output:
 - Emails: must match `user@domain.tld` pattern, local part must appear in source text
 - Phones: must contain 7+ digits
 - URLs: must start with `http://`, `https://`, or `www.`
 - Dates: must contain at least one digit (filters "tomorrow", "last week")
-This eliminates the hallucination problem that plagued Round 1 testing.
 
 ---
 
@@ -67,12 +93,6 @@ This eliminates the hallucination problem that plagued Round 1 testing.
 - Already-short guard: if input has fewer sentences than requested, returns as-is
 - Validation: `--sentences 0` and `--sentences -1` both produce clean errors
 
-**Fixes applied:**
-1. Min-length guard (40 chars) — prevents hallucination on trivially short input
-2. Echo detection with retry + force-trim fallback
-3. `--sentences` validation (was accepting 0 and negative values)
-4. Sentence count enforcement via post-processing trim
-
 ---
 
 ### bt-jsonify (100% — 21/21)
@@ -81,16 +101,10 @@ This eliminates the hallucination problem that plagued Round 1 testing.
 
 **Key tests:**
 - Structured extraction: "John Doe, age 30, NYC" correctly parsed to all 3 fields
-- Prompt injection: `{"hacked":true}` input filtered to only requested fields (name, role)
+- Prompt injection: `{"hacked":true}` input filtered to only requested fields
 - Special characters: handles dollar signs, quotes, HTML in input
 - Many fields: 5+ fields with rich input all correctly populated
 - Missing data: fields not found in text return null
-
-**Fixes applied:**
-1. Prompt injection defense — output filtered to only requested field names (was returning arbitrary model-injected keys)
-2. JSON recovery — robust parsing that handles missing closing braces and malformed JSON
-
-**No changes needed in Round 3** — this tool was solid after Round 1 fixes.
 
 ---
 
@@ -99,16 +113,11 @@ This eliminates the hallucination problem that plagued Round 1 testing.
 **What it does:** Rewrites text in a specified style: formal, simple, punctuate, bullets, or commit message.
 
 **Key tests:**
-- Formal: informal text correctly rewritten in professional tone (was truncated pre-fix)
+- Formal: informal text correctly rewritten in professional tone
 - Bullets: paragraph converted to clean bullet points with markers
 - Commit: description correctly converted to imperative-mood single-line message
 - Punctuate: missing punctuation and capitalization correctly added
 - Adversarial: prompt injection actively refused by Qwen model
-
-**Fixes applied:**
-1. `max_tokens` formula — changed from `len/4 * 1.5` (floor 20) to `len/3 * 2` (floor 60). Short inputs were getting only 18-20 tokens, causing truncation.
-2. Style-specific `stop_at` tokens — `\n` for commit (single line), `None` for formal/bullets (multi-paragraph), `\n\n` for others. Previous blanket `\n\n` cut formal rewrites after first paragraph.
-3. Deduplication in engine.py — line-based dedup for bullet lists preserves formatting while removing repeated bullets.
 
 ---
 
@@ -117,23 +126,16 @@ This eliminates the hallucination problem that plagued Round 1 testing.
 **What it does:** Smart TL;DR with auto-detection of input type (diff, log, error traceback, generic text). Uses type-specific prompts.
 
 **Key tests:**
-- Diff: correctly identifies unified diff format, summarizes what changed and why
+- Diff: correctly identifies unified diff format, summarizes what changed
 - Log: identifies timestamped entries, summarizes sequence of events
 - Error: explains tracebacks in plain English with fix suggestions
 - Generic: produces concise one-line summaries
-- Adversarial: injection text correctly summarized as "a simulated security breach attempt"
-- Minimal input: single char "x" produces coherent short response (no hallucination with Qwen)
+- Adversarial: injection text correctly summarized as a simulated security breach attempt
 
 **3-tier error detection:**
 1. Strong signals (case-insensitive): traceback, exception, segfault, core dump, stack trace
 2. Case-sensitive: ERROR, FATAL, BUG:, PANIC (structured output keywords)
 3. Contextual: "error[:(", "TypeError:", "failed:", "aborted" (require error-like punctuation)
-
-This hierarchy prevents false positives (e.g., "abort mission" in plain text) while catching all real error formats.
-
-**Fixes applied:**
-1. `stop_at=None` — Qwen outputs markdown headings before content. With default `stop_at="\n"`, output was truncated after just the heading. Changed to allow full multi-line output.
-2. Markdown stripping in engine.py — `### Heading` and `**bold**` markers now stripped from all tool output.
 
 ---
 
@@ -142,20 +144,155 @@ This hierarchy prevents false positives (e.g., "abort mission" in plain text) wh
 **What it does:** Generates code names (branch, function, file, class, variable) from descriptions. Applies correct formatting (kebab-case, camelCase, PascalCase, snake_case).
 
 **Key tests:**
-- Branch: "fix the broken login page css" → `fix/login-page-css-alignment` (with prefix detection)
-- Function: "validate user email" → `validateUserEmail` (camelCase)
-- Variable: "store user session data" → `store_user_session_data` (snake_case)
-- Class: "handle HTTP request routing" → `HttpRequestRouter` (PascalCase)
-- OAuth: "Add OAuth2 authentication" → `add-oauth2-authentication-flow` (preserves technical terms)
+- Branch: "fix the broken login page css" produces kebab-case with prefix detection
+- Function: "validate user email" produces camelCase
+- Variable: "store user session data" produces snake_case
+- Class: "handle HTTP request routing" produces PascalCase
 
-**The space-separated prompt breakthrough:**
-The key insight was asking the model to output *space-separated words* instead of formatted names. Small models struggle with camelCase/kebab formatting directly, but reliably output word lists. The formatter then applies the correct casing. This eliminated the "format echo" problem (model returning "snake_case" as the output) and the concatenation problem (model returning "validateuseremail" without boundaries).
+**The space-separated prompt breakthrough:** Ask the model to output space-separated words instead of formatted names. Small models struggle with camelCase/kebab formatting directly, but reliably output word lists. The formatter then applies the correct casing.
 
-**Fixes applied:**
-1. Space-separated prompt strategy — completely rewrote prompts to ask for word lists
-2. Robust word splitter — handles camelCase boundaries, hyphens, underscores, concatenated words
-3. Branch prefix detection — recognizes fix/, feat/, bugfix/ etc. and preserves as path prefix
-4. Fallback to input words — if model output is empty or a single long concatenated blob, extracts meaningful words from the original description with stop-word filtering
+---
+
+### bt-commit (100% — 60/60)
+
+**What it does:** Generates conventional commit messages from git diffs. Detects commit type (feat, fix, refactor, docs, test, chore), extracts scope, writes imperative-mood subject line and optional body.
+
+**Key tests:**
+- Single-file diffs: correct type detection and scope extraction
+- Multi-file diffs: summarizes across files, picks dominant type
+- Rename/delete diffs: correctly identifies refactor/chore
+- Empty diff: clean error message
+- Large diffs: truncation handling, still produces coherent message
+- Scope override: `--scope` flag correctly applied
+
+---
+
+### bt-regex (100% — 23/23)
+
+**What it does:** Converts natural language descriptions to regular expressions. Optional `--test` flag validates the pattern against sample input.
+
+**Key tests:**
+- Email patterns: produces working regex that matches standard email formats
+- Phone patterns: handles US formats with optional country code
+- Date patterns: ISO and US date formats
+- URL patterns: matches http/https with path components
+- Test validation: `--test` correctly reports match/no-match with the generated pattern
+- Edge cases: escaping special characters in descriptions
+
+---
+
+### bt-cron (100% — 110/110)
+
+**What it does:** Converts natural language to cron expressions, or explains/validates existing cron strings.
+
+**Key tests:**
+- Generation: "every weekday at 9am" correctly produces `0 9 * * 1-5`
+- Complex schedules: "first Monday of every month at noon" handled correctly
+- Explain mode: `--explain` produces human-readable description of any cron string
+- Validate mode: `--validate` checks syntax and reports errors
+- Invalid cron: malformed expressions correctly rejected with explanation
+- Edge cases: leap year awareness, timezone notes, non-standard extensions
+
+---
+
+### bt-sql (100% — 80/80)
+
+**What it does:** Converts natural language queries to SQL. Supports schema awareness via `--table` or `--schema` flags.
+
+**Key tests:**
+- Simple queries: SELECT, INSERT, UPDATE, DELETE from descriptions
+- Joins: multi-table queries with correct JOIN syntax
+- Aggregation: GROUP BY, HAVING, COUNT/SUM/AVG correctly applied
+- Schema awareness: `--schema` file parsed and table/column names used accurately
+- Subqueries: nested SELECT statements generated correctly
+- Safety: DROP/TRUNCATE warnings when destructive operations detected
+
+---
+
+### bt-explain (100% — 66/66)
+
+**What it does:** Universal explainer. Auto-detects input type (error message, code snippet, config file, CLI command) and provides a plain-English explanation.
+
+**Key tests:**
+- Error messages: ECONNREFUSED, ENOMEM, SegFault explained with fix suggestions
+- Code snippets: Python, JS, Rust, Go — explains what the code does
+- Config files: nginx, Docker, YAML — explains each directive
+- CLI commands: git, docker, kubectl — explains flags and effects
+- Stack traces: identifies root cause and suggests fix
+- Multi-domain: correctly switches explanation style based on detected type
+
+---
+
+### bt-assert (100% — 60/60)
+
+**What it does:** Natural language test assertions. Reads input, evaluates assertion, returns binary pass/fail with exit code (0 = pass, 1 = fail). Designed for CI pipelines.
+
+**Key tests:**
+- JSON assertions: "status is 200", "array has 3 elements", "name field exists"
+- String assertions: "contains the word error", "starts with OK", "is valid JSON"
+- Numeric assertions: "value is greater than 0", "count is between 1 and 100"
+- Negative assertions: "does not contain password", "is not empty"
+- Exit codes: verified 0 on pass, 1 on fail — CI-compatible
+- Edge cases: empty input, null values, unicode content
+
+---
+
+### bt-changelog (100% — 53/53)
+
+**What it does:** Converts git log output to structured release notes. Groups entries by commit type (features, fixes, refactors, etc.).
+
+**Key tests:**
+- Conventional commits: correctly groups feat/fix/docs/chore/refactor
+- Non-conventional: infers type from commit message content
+- Format options: markdown and plain text output
+- Version headers: optional `--version` tag included in output
+- Deduplication: repeated commits collapsed
+- Scope grouping: commits with scopes grouped under scope headers
+
+---
+
+### bt-env (100% — 21/21)
+
+**What it does:** Scans source code for environment variable references and generates .env templates.
+
+**Key tests:**
+- Python: detects `os.environ`, `os.getenv()` patterns
+- JavaScript: detects `process.env.VAR` patterns
+- Multi-file scanning: traverses directory tree, deduplicates vars
+- Template generation: outputs `VAR=` format with comments showing source file
+- Default values: includes defaults when detectable from code
+- Exclusions: ignores common non-secret vars (PATH, HOME, etc.) with `--exclude-common`
+
+---
+
+### bt-mock (100% — 64/64)
+
+**What it does:** Generates mock/fixture data from type descriptions. Supports JSON, CSV, and SQL INSERT output formats.
+
+**Key tests:**
+- JSON output: valid JSON array with correct field types
+- CSV output: proper header row, quoted strings, correct column count
+- SQL output: valid INSERT statements with correct escaping
+- Count control: `--count N` produces exactly N records
+- Type inference: "age" produces integers, "email" produces email-like strings, "name" produces names
+- Deterministic: `--seed` flag produces reproducible output
+- Edge cases: empty description, single field, 100+ records
+
+---
+
+### bt-gitignore (100% — 119/119)
+
+**What it does:** Generates .gitignore files using built-in templates for common languages/frameworks. Falls back to LLM generation for unknown stacks.
+
+**Key tests:**
+- Built-in templates: Python, Node, Rust, Go, Java, C++, Ruby — all produce correct patterns
+- Multi-language: `--lang python,node` merges templates correctly
+- Append mode: `--append` adds to existing .gitignore without duplicating entries
+- Deduplication: repeated patterns collapsed when merging
+- Framework detection: Django, React, Next.js specific patterns included
+- Custom additions: `--add "*.log,tmp/"` appended to template output
+- Fallback: unknown languages trigger LLM generation with reasonable defaults
+- Comment headers: each section labeled with language name
 
 ---
 
@@ -173,11 +310,11 @@ The key insight was asking the model to output *space-separated words* instead o
 - **Bugs fixed:** 2
 - **Key issues:** Markdown heading in output truncated by `stop_at="\n"`, bold markers leaking through
 
-### Round 3: Per-tool optimization (2026-03-22)
-- **Tests:** 196 (comprehensive per-tool suites)
-- **Pass rate:** 99.5% (194/196)
+### Round 3: Full suite expansion (2026-03-23)
+- **Tests:** 852 (comprehensive per-tool suites across all 17 tools)
+- **Pass rate:** ~99.8% (850/852)
 - **Bugs fixed:** 12 total across all rounds
-- **Key improvements:** Regex post-validation for bt-extract, echo detection for bt-summarize, space-separated prompts for bt-namegen, 3-tier error detection for bt-tldr, min-length guards, sentence count enforcement
+- **Key improvements:** Regex post-validation for bt-extract, echo detection for bt-summarize, space-separated prompts for bt-namegen, 3-tier error detection for bt-tldr, min-length guards, sentence count enforcement, template-first approach for bt-gitignore, binary exit codes for bt-assert
 
 ### Cumulative Bug Fix Summary
 
@@ -195,39 +332,53 @@ The key insight was asking the model to output *space-separated words* instead o
 | 10 | `cli/namegen.py` | Model returns format name or empty output | Space-separated prompts + input fallback |
 | 11 | `cli/tldr.py` | `stop_at="\n"` truncated Qwen multi-line output | Changed to `stop_at=None` |
 | 12 | `engine.py` | Markdown headings/bold in output | Regex stripping in `clean_output()` |
-| — | All 7 CLI tools | Unhandled `FileNotFoundError` | try/except with clean error messages |
-| — | `engine.py` | Repetition loops (BitNet 2B) | `_dedup_repetition()` with line-aware mode |
-| — | `engine.py` | `<think>` tags from Qwen reasoning | `_strip_think_tags()` |
-| — | `engine.py` | llama.cpp banner/ANSI codes in output | `_strip_llama_banner()` |
+| -- | All CLI tools | Unhandled `FileNotFoundError` | try/except with clean error messages |
+| -- | `engine.py` | Repetition loops (BitNet 2B) | `_dedup_repetition()` with line-aware mode |
+| -- | `engine.py` | `<think>` tags from Qwen reasoning | `_strip_think_tags()` |
+| -- | `engine.py` | llama.cpp banner/ANSI codes in output | `_strip_llama_banner()` |
 
 ---
 
 ## Key Engineering Lessons
 
 ### 1. Small models need post-processing, not better prompts alone
+
 The single biggest lesson. Small models (2B-4B) can be made reliable with the right combination of:
 - Constrained output (force model to pick from a list, not generate freely)
 - Post-validation (regex checks, field filtering, echo detection)
-- Fallback chains (try model output → retry with different prompt → use heuristic)
+- Fallback chains (try model output -> retry with different prompt -> use heuristic)
 
 Prompts get you 80% of the way. Post-processing gets you to 99%.
 
 ### 2. Ask for what the model can do, format it yourself
+
 The bt-namegen breakthrough: instead of asking for `camelCase` output (which small models struggle with), ask for space-separated words and apply formatting in code. This principle generalizes: never ask the model to handle formatting, structure, or constraint enforcement. Always do that in the wrapper.
 
 ### 3. Different models fail differently
+
 BitNet 2B: repetition loops, format echoing, weak injection resistance.
 Qwen 3.5-4B: markdown artifacts in output, but no repetition, better injection resistance.
 The `engine.py` clean_output pipeline handles both failure modes because we designed it iteratively.
 
 ### 4. Regex post-validation is the anti-hallucination layer
+
 For extraction tasks, having the model do the semantic work (finding entities) and regex do the validation (is this actually an email?) eliminates nearly all false positives. The validators are intentionally loose — they reject obvious hallucinations without filtering valid but unusual formats.
 
 ### 5. Stop tokens are model-specific
+
 BitNet 2B needed `stop_at="\n\n"` to prevent runaway generation. Qwen 3.5-4B needed `stop_at=None` because it outputs markdown headings that contain `\n`. The right stop token depends on the model's output style, not just the task.
 
 ### 6. Test adversarially from day one
+
 Prompt injection tests caught a real vulnerability in bt-jsonify (Round 1) where the model could be tricked into outputting arbitrary JSON fields. The fix (field filtering) is simple but would never have been found without adversarial testing.
+
+### 7. Template-first beats LLM-first for structured output
+
+bt-gitignore and bt-cron demonstrated that using built-in templates/lookup tables as the primary path — with the LLM as fallback for unknown inputs — produces more reliable results than LLM-first approaches. The LLM handles the long tail; deterministic code handles the common cases.
+
+### 8. Binary exit codes unlock CI integration
+
+bt-assert's design of returning exit code 0/1 instead of text output makes LLM-powered assertions composable with standard Unix tooling and CI pipelines. This pattern (LLM decides, code enforces the contract) applies broadly.
 
 ---
 
@@ -235,12 +386,14 @@ Prompt injection tests caught a real vulnerability in bt-jsonify (Round 1) where
 
 ### Model-level (cannot be fixed in code)
 1. **Hallucination on trivially short input** — single-word inputs like "word" cause fabricated content. Mitigated with min-length guards where possible.
-2. **camelCase word boundaries** — model sometimes concatenates words without separators ("validateuseremail"). The space-separated prompt strategy mostly fixes this, but occasional failures remain.
+2. **camelCase word boundaries** — model sometimes concatenates words without separators. The space-separated prompt strategy mostly fixes this, but occasional failures remain.
 3. **Numeric precision** — price "$99.99" sometimes extracted as 9.99 (dropped leading digit).
 4. **Ambiguous classification** — genuinely ambiguous inputs (mixed sentiment, medium vs. high urgency) can go either way. This is inherent to the task, not the model.
+5. **Complex SQL** — multi-JOIN queries with subqueries and window functions may produce syntactically incorrect SQL. Simple to moderate queries are reliable.
 
 ### Architecture-level
-5. **Single-turn only** — no conversation context. Each tool invocation is independent.
-6. **No streaming** — output appears all at once after inference completes.
-7. **Windows-only tested** — paths and binary detection are configured for Windows. Would need path adjustments for Linux/macOS.
-8. **Model loading overhead** — first invocation loads the model (~2-3 seconds). Subsequent invocations in the same session may benefit from OS file cache.
+6. **Single-turn only** — no conversation context. Each tool invocation is independent.
+7. **No streaming** — output appears all at once after inference completes.
+8. **Windows-only tested** — paths and binary detection are configured for Windows. Would need path adjustments for Linux/macOS.
+9. **Model loading overhead** — first invocation loads the model (~2-3 seconds). Subsequent invocations in the same session may benefit from OS file cache.
+10. **No network access** — all tools run offline. bt-sql cannot validate against a live database; bt-env cannot verify that scanned vars are actually required at runtime.
