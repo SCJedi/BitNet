@@ -32,6 +32,7 @@ from .providers import (
     _build_provider,
 )
 from .tools import ToolRegistry, register_builtin_tools, chat_with_tools
+from .mcp_client import MCPManager, MCPServerConfig
 
 # ── State ─────────────────────────────────────────────────────────────────
 
@@ -40,6 +41,7 @@ llama_base_url = f"http://{config.HOST}:{config.LLAMA_SERVER_PORT}"
 
 registry = ProviderRegistry()
 tool_registry = ToolRegistry()
+mcp_manager = MCPManager()
 
 
 # ── llama-server management ───────────────────────────────────────────────
@@ -142,7 +144,24 @@ async def lifespan(app: FastAPI):
     register_builtin_tools(tool_registry)
     print(f"  Tools loaded: {', '.join(t['name'] for t in tool_registry.list_tools())}")
 
+    # Load and connect MCP servers
+    mcp_configs = mcp_manager.load_from_file(config.MCP_SERVERS_FILE)
+    mcp_tool_count = 0
+    for mc in mcp_configs:
+        if mc.auto_start:
+            try:
+                await mcp_manager.add_server(mc)
+            except Exception as e:
+                print(f"  WARNING: MCP server '{mc.name}' failed to start: {e}")
+        else:
+            mcp_manager.configs[mc.name] = mc  # track but don't connect
+    mcp_tool_count = mcp_manager.bridge_to_registry(tool_registry)
+    if mcp_tool_count:
+        print(f"  MCP tools bridged: {mcp_tool_count}")
+
     yield
+
+    await mcp_manager.shutdown()
     await stop_llama_server()
 
 
@@ -290,6 +309,67 @@ async def toggle_tool(name: str):
         )
     tool_registry.set_enabled(name, not tool.enabled)
     return {"status": "ok", "name": name, "enabled": tool.enabled}
+
+
+# ── MCP server management API ───────────────────────────────────────────
+
+@app.get("/api/mcp/servers")
+async def list_mcp_servers():
+    """List all MCP servers with connection status."""
+    return mcp_manager.list_servers()
+
+
+@app.post("/api/mcp/servers")
+async def add_mcp_server(request: Request):
+    """Add a new MCP server, connect to it, and bridge its tools."""
+    body = await request.json()
+
+    name = body.get("name")
+    command = body.get("command")
+    if not name or not command:
+        return JSONResponse(
+            status_code=400,
+            content={"error": "Both 'name' and 'command' are required."},
+        )
+
+    cfg = MCPServerConfig(
+        name=name,
+        command=command,
+        args=body.get("args", []),
+        env=body.get("env", {}),
+        auto_start=body.get("auto_start", True),
+    )
+
+    try:
+        tool_names = await mcp_manager.add_server(cfg)
+        bridged = mcp_manager.bridge_to_registry(tool_registry)
+        mcp_manager.save_to_file(config.MCP_SERVERS_FILE)
+        return {
+            "status": "ok",
+            "name": name,
+            "tools": tool_names,
+            "bridged": bridged,
+        }
+    except Exception as e:
+        return JSONResponse(
+            status_code=500,
+            content={"error": f"Failed to connect MCP server '{name}': {e}"},
+        )
+
+
+@app.delete("/api/mcp/servers/{name}")
+async def remove_mcp_server(name: str):
+    """Disconnect, unbridge, and remove an MCP server."""
+    if name not in mcp_manager.configs:
+        return JSONResponse(
+            status_code=404,
+            content={"error": f"MCP server '{name}' not found."},
+        )
+
+    mcp_manager.unbridge_from_registry(tool_registry, name)
+    await mcp_manager.remove_server(name)
+    mcp_manager.save_to_file(config.MCP_SERVERS_FILE)
+    return {"status": "ok"}
 
 
 # ── Proxy: /health ────────────────────────────────────────────────────────
