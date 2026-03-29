@@ -290,6 +290,25 @@ async def delete_provider(provider_id: str):
     return {"status": "ok"}
 
 
+@app.post("/api/providers/{provider_id}/test")
+async def test_provider(provider_id: str):
+    """Test a provider by sending a tiny request."""
+    provider = registry.get(provider_id)
+    if provider is None:
+        return JSONResponse(status_code=404, content={"error": f"Provider '{provider_id}' not found."})
+    try:
+        # Collect a few tokens to verify it works
+        text = ""
+        async for chunk in provider.chat_stream(
+            messages=[{"role": "user", "content": "Say OK"}],
+            model="", temperature=0.0, max_tokens=5,
+        ):
+            text += chunk.decode("utf-8", errors="ignore")
+        return {"status": "ok", "preview": text[:200]}
+    except Exception as e:
+        return JSONResponse(status_code=500, content={"error": str(e)})
+
+
 # ── Tool management API ──────────────────────────────────────────────────
 
 @app.get("/api/tools")
@@ -309,6 +328,21 @@ async def toggle_tool(name: str):
         )
     tool_registry.set_enabled(name, not tool.enabled)
     return {"status": "ok", "name": name, "enabled": tool.enabled}
+
+
+@app.post("/api/tools/{name}/test")
+async def test_tool(name: str, request: Request):
+    """Test a tool with provided arguments."""
+    tool = tool_registry.get(name)
+    if tool is None:
+        return JSONResponse(status_code=404, content={"error": f"Tool '{name}' not found."})
+    try:
+        body = await request.json()
+        args = body.get("arguments", {})
+        result = await tool.callable(**args)
+        return {"status": "ok", "result": result[:5000]}
+    except Exception as e:
+        return JSONResponse(status_code=500, content={"error": str(e)})
 
 
 # ── MCP server management API ───────────────────────────────────────────

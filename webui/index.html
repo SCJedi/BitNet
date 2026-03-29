@@ -926,6 +926,428 @@ html, body {
 .tool-toggle-switch input:checked + .tool-toggle-slider::before {
   transform: translateX(18px);
 }
+
+/* ── Collapsible Settings Sections ───────────────────────────────────── */
+.settings-section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+  padding: 4px 0;
+  user-select: none;
+}
+.settings-section-header:hover .settings-section-title {
+  color: var(--text);
+}
+.settings-section-header .section-arrow {
+  font-size: 10px;
+  color: var(--text-secondary);
+  transition: transform 0.2s;
+}
+.settings-section-header .section-arrow.open {
+  transform: rotate(90deg);
+}
+.settings-section-body {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.3s ease;
+}
+.settings-section-body.open {
+  max-height: 5000px;
+}
+
+/* ── Provider Cards ──────────────────────────────────────────────────── */
+.provider-card {
+  background: var(--input-bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 10px 12px;
+  margin-bottom: 8px;
+  font-size: 13px;
+}
+.provider-card-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+.provider-card-name {
+  font-weight: 600;
+  color: var(--text);
+  flex: 1;
+}
+.provider-card-type {
+  font-size: 11px;
+  color: var(--text-secondary);
+  background: rgba(255,255,255,0.06);
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+.provider-card-detail {
+  font-size: 12px;
+  color: var(--text-secondary);
+  margin-bottom: 2px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.provider-card-actions {
+  display: flex;
+  gap: 6px;
+  margin-top: 8px;
+}
+.provider-card-actions button {
+  padding: 4px 10px;
+  border-radius: 4px;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: 12px;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+}
+.provider-card-actions button:hover {
+  background: var(--hover);
+  color: var(--text);
+}
+.provider-card-actions button.danger:hover {
+  border-color: var(--danger);
+  color: var(--danger);
+}
+.provider-card-actions button.test-success {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+.provider-card-actions button.test-fail {
+  border-color: var(--danger);
+  color: var(--danger);
+}
+
+/* ── Status Dot ──────────────────────────────────────────────────────── */
+.status-dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.status-dot.connected { background: #22c55e; }
+.status-dot.disconnected { background: var(--danger); }
+.status-dot.unknown { background: var(--text-secondary); }
+
+/* ── Tool Groups ─────────────────────────────────────────────────────── */
+.tool-group {
+  margin-bottom: 12px;
+}
+.tool-group-header {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--accent);
+  padding: 6px 0 4px;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+  margin-bottom: 4px;
+}
+.tool-detail {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.3s ease;
+  background: rgba(0,0,0,0.15);
+  border-radius: 0 0 6px 6px;
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+.tool-detail.open {
+  max-height: 600px;
+  padding: 8px 10px;
+  overflow-y: auto;
+}
+.tool-detail pre {
+  margin: 0;
+  white-space: pre-wrap;
+  word-break: break-all;
+  font-family: 'Consolas', monospace;
+  font-size: 11px;
+  line-height: 1.4;
+}
+.tool-toggle-row {
+  flex-wrap: wrap;
+}
+.tool-toggle-actions {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+  margin-left: 8px;
+}
+
+/* ── Test Button ─────────────────────────────────────────────────────── */
+.test-btn {
+  padding: 2px 8px;
+  border-radius: 4px;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: 11px;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+  white-space: nowrap;
+}
+.test-btn:hover {
+  background: var(--hover);
+  color: var(--text);
+}
+.schema-btn {
+  padding: 2px 8px;
+  border-radius: 4px;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: 11px;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+  white-space: nowrap;
+}
+.schema-btn:hover {
+  background: var(--hover);
+  color: var(--text);
+}
+
+/* ── MCP Server Card ─────────────────────────────────────────────────── */
+.mcp-server-card {
+  background: var(--input-bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 10px 12px;
+  margin-bottom: 8px;
+  font-size: 13px;
+}
+.mcp-server-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.mcp-server-name {
+  font-weight: 600;
+  color: var(--text);
+  flex: 1;
+}
+.mcp-server-meta {
+  font-size: 12px;
+  color: var(--text-secondary);
+  margin-top: 4px;
+}
+.mcp-server-actions {
+  display: flex;
+  gap: 6px;
+  margin-top: 8px;
+}
+.mcp-server-actions button {
+  padding: 4px 10px;
+  border-radius: 4px;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: 12px;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+}
+.mcp-server-actions button:hover {
+  background: var(--hover);
+  color: var(--text);
+}
+.mcp-server-actions button.danger:hover {
+  border-color: var(--danger);
+  color: var(--danger);
+}
+.mcp-server-tools {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.3s ease;
+}
+.mcp-server-tools.open {
+  max-height: 1000px;
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid var(--border);
+}
+.mcp-server-tools .mcp-tool-item {
+  font-size: 12px;
+  color: var(--text-secondary);
+  padding: 3px 0;
+  font-family: 'Consolas', monospace;
+}
+.mcp-add-form {
+  margin-top: 10px;
+}
+.mcp-add-form input, .mcp-add-form select {
+  width: 100%;
+  background: var(--input-bg);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--text);
+  padding: 6px 10px;
+  font-size: 13px;
+  margin-bottom: 8px;
+  outline: none;
+  transition: border-color 0.2s;
+}
+.mcp-add-form input:focus {
+  border-color: var(--accent);
+}
+.mcp-add-form label {
+  display: block;
+  font-size: 12px;
+  color: var(--text-secondary);
+  margin-bottom: 4px;
+}
+.settings-btn-row {
+  display: flex;
+  gap: 6px;
+}
+.settings-btn-row button {
+  flex: 1;
+  padding: 7px 14px;
+  border-radius: 6px;
+  border: none;
+  background: var(--accent);
+  color: white;
+  font-size: 13px;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.settings-btn-row button:hover {
+  background: var(--accent-hover);
+}
+.settings-btn-row button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ── Test Tool Dialog ────────────────────────────────────────────────── */
+.tool-test-dialog-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.6);
+  z-index: 3000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.tool-test-dialog {
+  background: var(--sidebar);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  width: 420px;
+  max-width: 90vw;
+  max-height: 80vh;
+  overflow-y: auto;
+  padding: 20px;
+}
+.tool-test-dialog h4 {
+  font-size: 15px;
+  font-weight: 600;
+  margin-bottom: 12px;
+  color: var(--text);
+}
+.tool-test-dialog .field-label {
+  font-size: 12px;
+  color: var(--text-secondary);
+  margin-bottom: 4px;
+  font-weight: 600;
+}
+.tool-test-dialog input, .tool-test-dialog textarea {
+  width: 100%;
+  background: var(--input-bg);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--text);
+  padding: 6px 10px;
+  font-size: 13px;
+  outline: none;
+  margin-bottom: 10px;
+}
+.tool-test-dialog textarea {
+  font-family: 'Consolas', monospace;
+  min-height: 60px;
+  resize: vertical;
+}
+.tool-test-dialog .dialog-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+}
+.tool-test-dialog .dialog-actions button {
+  flex: 1;
+  padding: 8px;
+  border-radius: 6px;
+  border: none;
+  font-size: 13px;
+  cursor: pointer;
+}
+.tool-test-dialog .btn-run {
+  background: var(--accent);
+  color: white;
+}
+.tool-test-dialog .btn-run:hover { background: var(--accent-hover); }
+.tool-test-dialog .btn-cancel {
+  background: transparent;
+  color: var(--text-secondary);
+  border: 1px solid var(--border);
+}
+.tool-test-dialog .btn-cancel:hover { background: var(--hover); }
+.tool-test-result {
+  margin-top: 12px;
+  padding: 10px;
+  background: rgba(0,0,0,0.2);
+  border-radius: 6px;
+  font-size: 12px;
+  font-family: 'Consolas', monospace;
+  white-space: pre-wrap;
+  word-break: break-all;
+  color: var(--text-secondary);
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+/* ── Loading Spinner ─────────────────────────────────────────────────── */
+.loading-spinner {
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  border: 2px solid var(--border);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: spin 0.6s linear infinite;
+  vertical-align: middle;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ── Provider Add Form ─────────────────────────────────────────────── */
+.provider-add-form {
+  margin-top: 10px;
+  border-top: 1px solid var(--border);
+  padding-top: 10px;
+}
+.provider-add-form .settings-field {
+  margin-bottom: 10px;
+}
+.provider-add-form input,
+.provider-add-form select {
+  width: 100%;
+  background: var(--input-bg);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--text);
+  padding: 6px 10px;
+  font-size: 13px;
+  outline: none;
+  transition: border-color 0.2s;
+}
+.provider-add-form input:focus,
+.provider-add-form select:focus {
+  border-color: var(--accent);
+}
 </style>
 </head>
 <body>
@@ -996,121 +1418,171 @@ html, body {
   <div class="settings-body" id="settingsBody">
     <!-- Presets -->
     <div class="settings-section">
-      <div class="settings-section-title">Presets</div>
-      <div class="preset-active-label" id="presetActiveLabel">No preset active</div>
-      <select class="preset-selector" id="presetSelector">
-        <option value="">-- Select a preset --</option>
-      </select>
-      <div class="preset-btn-row">
-        <button class="preset-btn accent" onclick="loadSelectedPreset()">Load</button>
-        <button class="preset-btn" onclick="saveCurrentAsPreset()">Save As</button>
-        <button class="preset-btn danger" onclick="deleteSelectedPreset()">Delete</button>
+      <div class="settings-section-header" onclick="toggleSettingsSection(this)">
+        <div class="settings-section-title">Presets</div>
+        <span class="section-arrow open">&#9654;</span>
       </div>
-      <div class="preset-btn-row">
-        <button class="preset-btn" onclick="exportAllPresets()">Export All</button>
-        <button class="preset-btn" onclick="document.getElementById('presetImportInput').click()">Import</button>
+      <div class="settings-section-body open">
+        <div class="preset-active-label" id="presetActiveLabel">No preset active</div>
+        <select class="preset-selector" id="presetSelector">
+          <option value="">-- Select a preset --</option>
+        </select>
+        <div class="preset-btn-row">
+          <button class="preset-btn accent" onclick="loadSelectedPreset()">Load</button>
+          <button class="preset-btn" onclick="saveCurrentAsPreset()">Save As</button>
+          <button class="preset-btn danger" onclick="deleteSelectedPreset()">Delete</button>
+        </div>
+        <div class="preset-btn-row">
+          <button class="preset-btn" onclick="exportAllPresets()">Export All</button>
+          <button class="preset-btn" onclick="document.getElementById('presetImportInput').click()">Import</button>
+        </div>
       </div>
     </div>
 
     <!-- System Prompt -->
     <div class="settings-section">
-      <div class="settings-section-title">System Prompt</div>
-      <div class="settings-field">
-        <textarea id="settingsSystemPrompt" rows="4" placeholder="You are a helpful assistant."></textarea>
+      <div class="settings-section-header" onclick="toggleSettingsSection(this)">
+        <div class="settings-section-title">System Prompt</div>
+        <span class="section-arrow open">&#9654;</span>
+      </div>
+      <div class="settings-section-body open">
+        <div class="settings-field">
+          <textarea id="settingsSystemPrompt" rows="4" placeholder="You are a helpful assistant."></textarea>
+        </div>
       </div>
     </div>
 
     <!-- Generation Settings -->
     <div class="settings-section">
-      <div class="settings-section-title">Generation</div>
-      <div class="settings-field">
-        <label>Temperature</label>
-        <div class="field-row">
-          <input type="range" id="settingsTemp" min="0" max="2" step="0.1" value="0.7" oninput="document.getElementById('settingsTempVal').textContent = parseFloat(this.value).toFixed(1)">
-          <span class="field-value" id="settingsTempVal">0.7</span>
+      <div class="settings-section-header" onclick="toggleSettingsSection(this)">
+        <div class="settings-section-title">Generation</div>
+        <span class="section-arrow open">&#9654;</span>
+      </div>
+      <div class="settings-section-body open">
+        <div class="settings-field">
+          <label>Temperature</label>
+          <div class="field-row">
+            <input type="range" id="settingsTemp" min="0" max="2" step="0.1" value="0.7" oninput="document.getElementById('settingsTempVal').textContent = parseFloat(this.value).toFixed(1)">
+            <span class="field-value" id="settingsTempVal">0.7</span>
+          </div>
+        </div>
+        <div class="settings-field">
+          <label>Max Tokens</label>
+          <input type="number" id="settingsMaxTokens" value="8192" min="64" max="32768" step="64">
+        </div>
+        <div class="settings-field">
+          <label>Top P</label>
+          <div class="field-row">
+            <input type="range" id="settingsTopP" min="0" max="1" step="0.05" value="0.9" oninput="document.getElementById('settingsTopPVal').textContent = parseFloat(this.value).toFixed(2)">
+            <span class="field-value" id="settingsTopPVal">0.90</span>
+          </div>
+        </div>
+        <div class="settings-field">
+          <label>Top K</label>
+          <input type="number" id="settingsTopK" value="40" min="0" max="200" step="1">
+        </div>
+        <div class="settings-field">
+          <label>Repeat Penalty</label>
+          <div class="field-row">
+            <input type="range" id="settingsRepeatPenalty" min="0.8" max="2" step="0.05" value="1.1" oninput="document.getElementById('settingsRepeatPenaltyVal').textContent = parseFloat(this.value).toFixed(2)">
+            <span class="field-value" id="settingsRepeatPenaltyVal">1.10</span>
+          </div>
+        </div>
+        <div class="settings-field">
+          <label>Min P</label>
+          <div class="field-row">
+            <input type="range" id="settingsMinP" min="0" max="0.5" step="0.01" value="0.05" oninput="document.getElementById('settingsMinPVal').textContent = parseFloat(this.value).toFixed(2)">
+            <span class="field-value" id="settingsMinPVal">0.05</span>
+          </div>
         </div>
       </div>
-      <div class="settings-field">
-        <label>Max Tokens</label>
-        <input type="number" id="settingsMaxTokens" value="8192" min="64" max="32768" step="64">
-      </div>
-      <div class="settings-field">
-        <label>Top P</label>
-        <div class="field-row">
-          <input type="range" id="settingsTopP" min="0" max="1" step="0.05" value="0.9" oninput="document.getElementById('settingsTopPVal').textContent = parseFloat(this.value).toFixed(2)">
-          <span class="field-value" id="settingsTopPVal">0.90</span>
-        </div>
-      </div>
-      <div class="settings-field">
-        <label>Top K</label>
-        <input type="number" id="settingsTopK" value="40" min="0" max="200" step="1">
-      </div>
-      <div class="settings-field">
-        <label>Repeat Penalty</label>
-        <div class="field-row">
-          <input type="range" id="settingsRepeatPenalty" min="0.8" max="2" step="0.05" value="1.1" oninput="document.getElementById('settingsRepeatPenaltyVal').textContent = parseFloat(this.value).toFixed(2)">
-          <span class="field-value" id="settingsRepeatPenaltyVal">1.10</span>
-        </div>
-      </div>
-      <div class="settings-field">
-        <label>Min P</label>
-        <div class="field-row">
-          <input type="range" id="settingsMinP" min="0" max="0.5" step="0.01" value="0.05" oninput="document.getElementById('settingsMinPVal').textContent = parseFloat(this.value).toFixed(2)">
-          <span class="field-value" id="settingsMinPVal">0.05</span>
-        </div>
-      </div>
-    </div>
-
-    <!-- Display Info -->
-    <div class="settings-section">
-      <div class="settings-section-title">Display</div>
-      <div class="settings-info" id="displayModel">Model: Qwen3.5-9B</div>
-      <div class="settings-info">Context: 32,768 tokens</div>
-    </div>
-
-    <!-- Tools -->
-    <div class="settings-section">
-      <div class="settings-section-title">Tools</div>
-      <div id="toolList"></div>
     </div>
 
     <!-- Providers -->
     <div class="settings-section">
-      <div class="settings-section-title">Providers</div>
-      <div id="providerList" style="margin-bottom:10px;"></div>
-      <details style="margin-top:6px;">
-        <summary style="cursor:pointer;color:var(--accent);font-size:13px;">Add Provider</summary>
-        <div style="margin-top:8px;">
+      <div class="settings-section-header" onclick="toggleSettingsSection(this)">
+        <div class="settings-section-title">Providers</div>
+        <span class="section-arrow open">&#9654;</span>
+      </div>
+      <div class="settings-section-body open">
+        <div class="settings-info" id="displayModel">Provider: Local</div>
+        <div id="providerList" style="margin-bottom:10px;"></div>
+        <div class="provider-add-form" id="providerAddForm">
           <div class="settings-field">
             <label>ID (unique key)</label>
-            <input type="text" id="newProviderId" placeholder="e.g. openai" style="width:100%;background:var(--input-bg);border:1px solid var(--border);border-radius:6px;color:var(--text);padding:6px 10px;font-size:13px;">
+            <input type="text" id="newProviderId" placeholder="e.g. openai">
           </div>
           <div class="settings-field">
             <label>Name</label>
-            <input type="text" id="newProviderName" placeholder="e.g. OpenAI GPT-4o" style="width:100%;background:var(--input-bg);border:1px solid var(--border);border-radius:6px;color:var(--text);padding:6px 10px;font-size:13px;">
+            <input type="text" id="newProviderName" placeholder="e.g. OpenAI GPT-4o">
           </div>
           <div class="settings-field">
             <label>Type</label>
-            <select id="newProviderType" style="width:100%;background:var(--input-bg);border:1px solid var(--border);border-radius:6px;color:var(--text);padding:6px 10px;font-size:13px;">
+            <select id="newProviderType" onchange="onProviderTypeChange()">
               <option value="openai_compatible">OpenAI Compatible</option>
               <option value="anthropic">Anthropic</option>
             </select>
           </div>
           <div class="settings-field" id="newProviderBaseUrlField">
             <label>Base URL</label>
-            <input type="text" id="newProviderBaseUrl" placeholder="https://api.openai.com/v1" style="width:100%;background:var(--input-bg);border:1px solid var(--border);border-radius:6px;color:var(--text);padding:6px 10px;font-size:13px;">
+            <input type="text" id="newProviderBaseUrl" placeholder="https://api.openai.com/v1">
           </div>
           <div class="settings-field">
             <label>API Key</label>
-            <input type="password" id="newProviderApiKey" placeholder="sk-... or ${ENV_VAR}" style="width:100%;background:var(--input-bg);border:1px solid var(--border);border-radius:6px;color:var(--text);padding:6px 10px;font-size:13px;">
+            <input type="password" id="newProviderApiKey" placeholder="sk-... or ${ENV_VAR}">
           </div>
           <div class="settings-field">
             <label>Default Model</label>
-            <input type="text" id="newProviderModel" placeholder="e.g. gpt-4o" style="width:100%;background:var(--input-bg);border:1px solid var(--border);border-radius:6px;color:var(--text);padding:6px 10px;font-size:13px;">
+            <input type="text" id="newProviderModel" placeholder="e.g. gpt-4o">
           </div>
-          <button onclick="addProvider()" style="margin-top:6px;padding:6px 16px;background:var(--accent);color:white;border:none;border-radius:6px;cursor:pointer;font-size:13px;">Add</button>
+          <div class="settings-btn-row">
+            <button onclick="addProvider()" id="addProviderBtn">Add Provider</button>
+          </div>
         </div>
-      </details>
+      </div>
+    </div>
+
+    <!-- Tools -->
+    <div class="settings-section">
+      <div class="settings-section-header" onclick="toggleSettingsSection(this)">
+        <div class="settings-section-title">Tools</div>
+        <span class="section-arrow open">&#9654;</span>
+      </div>
+      <div class="settings-section-body open">
+        <div id="toolList"></div>
+      </div>
+    </div>
+
+    <!-- MCP Servers -->
+    <div class="settings-section">
+      <div class="settings-section-header" onclick="toggleSettingsSection(this)">
+        <div class="settings-section-title">MCP Servers</div>
+        <span class="section-arrow open">&#9654;</span>
+      </div>
+      <div class="settings-section-body open">
+        <div id="mcpServerList"></div>
+        <div class="mcp-add-form">
+          <div class="settings-field">
+            <label>Server Name</label>
+            <input type="text" id="mcpName" placeholder="e.g. filesystem">
+          </div>
+          <div class="settings-field">
+            <label>Command</label>
+            <input type="text" id="mcpCommand" placeholder="e.g. npx">
+          </div>
+          <div class="settings-field">
+            <label>Arguments (comma-separated)</label>
+            <input type="text" id="mcpArgs" placeholder="e.g. -y,@modelcontextprotocol/server-filesystem,C:/Users">
+          </div>
+          <div class="settings-field">
+            <label>Environment Variables (KEY=VALUE, comma-separated)</label>
+            <input type="text" id="mcpEnv" placeholder="e.g. TOKEN=abc123,DEBUG=1">
+          </div>
+          <div class="settings-btn-row">
+            <button onclick="addMCPServer()" id="mcpConnectBtn">Connect Server</button>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
   <div class="settings-footer">
@@ -1456,6 +1928,30 @@ function openSettings() {
 
   document.getElementById('settingsBackdrop').classList.add('open');
   document.getElementById('settingsPanel').classList.add('open');
+
+  // Load dynamic data in parallel
+  Promise.all([
+    loadProviders(),
+    loadTools(),
+    loadMCPServers(),
+  ]).catch(e => console.warn('Settings load error:', e));
+}
+
+function toggleSettingsSection(header) {
+  const arrow = header.querySelector('.section-arrow');
+  const body = header.nextElementSibling;
+  if (arrow) arrow.classList.toggle('open');
+  if (body) body.classList.toggle('open');
+}
+
+function onProviderTypeChange() {
+  const type = document.getElementById('newProviderType').value;
+  const baseUrlField = document.getElementById('newProviderBaseUrlField');
+  if (type === 'anthropic') {
+    baseUrlField.style.display = 'none';
+  } else {
+    baseUrlField.style.display = '';
+  }
 }
 
 function closeSettings() {
@@ -1961,21 +2457,79 @@ function renderProviderList() {
   if (!container) return;
   container.innerHTML = '';
   providersList.forEach(p => {
-    const row = document.createElement('div');
-    row.style.cssText = 'display:flex;align-items:center;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border);font-size:13px;';
-    const info = document.createElement('span');
-    info.textContent = p.name + ' (' + p.type + ')';
-    info.style.color = 'var(--text)';
-    row.appendChild(info);
-    if (p.id !== 'local') {
-      const del = document.createElement('button');
-      del.textContent = 'Delete';
-      del.style.cssText = 'background:transparent;color:var(--danger);border:1px solid var(--danger);border-radius:4px;padding:2px 8px;cursor:pointer;font-size:12px;';
-      del.onclick = () => deleteProvider(p.id);
-      row.appendChild(del);
-    }
-    container.appendChild(row);
+    const card = document.createElement('div');
+    card.className = 'provider-card';
+    const truncUrl = p.base_url ? (p.base_url.length > 40 ? p.base_url.slice(0, 40) + '...' : p.base_url) : 'N/A';
+    card.innerHTML = `
+      <div class="provider-card-header">
+        <span class="status-dot unknown" id="provider-status-${escapeHtml(p.id)}"></span>
+        <span class="provider-card-name">${escapeHtml(p.name)}</span>
+        <span class="provider-card-type">${escapeHtml(p.type)}</span>
+      </div>
+      ${p.base_url ? '<div class="provider-card-detail">URL: ' + escapeHtml(truncUrl) + '</div>' : ''}
+      ${p.default_model ? '<div class="provider-card-detail">Model: ' + escapeHtml(p.default_model) + '</div>' : ''}
+      <div class="provider-card-actions">
+        <button onclick="testProviderConnection('${escapeHtml(p.id)}')" id="provider-test-btn-${escapeHtml(p.id)}">Test Connection</button>
+        ${p.id !== 'local' ? '<button onclick="editProvider(\'' + escapeHtml(p.id) + '\')">Edit</button>' : ''}
+        ${p.id !== 'local' ? '<button class="danger" onclick="deleteProvider(\'' + escapeHtml(p.id) + '\')">Delete</button>' : ''}
+      </div>
+    `;
+    container.appendChild(card);
   });
+}
+
+async function testProviderConnection(id) {
+  const btn = document.getElementById('provider-test-btn-' + id);
+  const dot = document.getElementById('provider-status-' + id);
+  if (!btn) return;
+  const origText = btn.textContent;
+  btn.innerHTML = '<span class="loading-spinner"></span> Testing...';
+  btn.disabled = true;
+  try {
+    const res = await fetch('/api/providers/' + encodeURIComponent(id) + '/test', { method: 'POST' });
+    const data = await res.json();
+    if (res.ok && data.status === 'ok') {
+      btn.textContent = 'Connected';
+      btn.classList.add('test-success');
+      btn.classList.remove('test-fail');
+      if (dot) { dot.className = 'status-dot connected'; }
+    } else {
+      btn.textContent = 'Failed';
+      btn.classList.add('test-fail');
+      btn.classList.remove('test-success');
+      if (dot) { dot.className = 'status-dot disconnected'; }
+      if (data.error) btn.title = data.error;
+    }
+  } catch (e) {
+    btn.textContent = 'Error';
+    btn.classList.add('test-fail');
+    btn.classList.remove('test-success');
+    if (dot) { dot.className = 'status-dot disconnected'; }
+    btn.title = e.message;
+  }
+  btn.disabled = false;
+  setTimeout(() => {
+    btn.textContent = origText;
+    btn.classList.remove('test-success', 'test-fail');
+    btn.title = '';
+  }, 3000);
+}
+
+function editProvider(id) {
+  const prov = providersList.find(p => p.id === id);
+  if (!prov) return;
+  document.getElementById('newProviderId').value = prov.id;
+  document.getElementById('newProviderName').value = prov.name || '';
+  document.getElementById('newProviderType').value = prov.type || 'openai_compatible';
+  document.getElementById('newProviderBaseUrl').value = prov.base_url || '';
+  document.getElementById('newProviderApiKey').value = '';  // Don't pre-fill secrets
+  document.getElementById('newProviderModel').value = prov.default_model || '';
+  onProviderTypeChange();
+  // Update button text to indicate editing
+  const addBtn = document.getElementById('addProviderBtn');
+  if (addBtn) addBtn.textContent = 'Update Provider';
+  // Scroll the form into view
+  document.getElementById('providerAddForm').scrollIntoView({ behavior: 'smooth' });
 }
 
 async function addProvider() {
@@ -2000,6 +2554,8 @@ async function addProvider() {
     document.getElementById('newProviderBaseUrl').value = '';
     document.getElementById('newProviderApiKey').value = '';
     document.getElementById('newProviderModel').value = '';
+    const addBtn = document.getElementById('addProviderBtn');
+    if (addBtn) addBtn.textContent = 'Add Provider';
     await loadProviders();
   } catch (e) {
     alert('Error adding provider: ' + e.message);
@@ -2037,18 +2593,139 @@ function renderToolList() {
     container.innerHTML = '<div style="font-size:13px;color:var(--text-secondary);">No tools available.</div>';
     return;
   }
-  container.innerHTML = toolsList.map(t => `
-    <div class="tool-toggle-row">
-      <div class="tool-toggle-info">
-        <div class="tool-toggle-name">${escapeHtml(t.name)}</div>
-        <div class="tool-toggle-desc">${escapeHtml(t.description)}</div>
+  // Group tools by source
+  const groups = {};
+  toolsList.forEach(t => {
+    const source = t.source || 'Built-in';
+    if (!groups[source]) groups[source] = [];
+    groups[source].push(t);
+  });
+  let html = '';
+  for (const [source, tools] of Object.entries(groups)) {
+    html += `<div class="tool-group">`;
+    html += `<div class="tool-group-header">${escapeHtml(source)} (${tools.length})</div>`;
+    tools.forEach((t, idx) => {
+      const toolId = 'tool-' + source.replace(/[^a-zA-Z0-9]/g, '_') + '-' + idx;
+      const schemaJson = t.parameters ? JSON.stringify(t.parameters, null, 2) : 'No parameters';
+      html += `
+        <div class="tool-toggle-row">
+          <div class="tool-toggle-info">
+            <div class="tool-toggle-name">${escapeHtml(t.name)}</div>
+            <div class="tool-toggle-desc">${escapeHtml(t.description || 'No description')}</div>
+          </div>
+          <div class="tool-toggle-actions">
+            <button class="schema-btn" onclick="toggleToolDetail('${toolId}')" title="Show parameters">{ }</button>
+            <button class="test-btn" onclick="openToolTestDialog('${escapeHtml(t.name)}')">Test</button>
+          </div>
+          <label class="tool-toggle-switch">
+            <input type="checkbox" ${t.enabled ? 'checked' : ''} onchange="toggleTool('${escapeHtml(t.name)}')">
+            <span class="tool-toggle-slider"></span>
+          </label>
+        </div>
+        <div class="tool-detail" id="${toolId}"><pre>${escapeHtml(schemaJson)}</pre></div>
+      `;
+    });
+    html += `</div>`;
+  }
+  container.innerHTML = html;
+}
+
+function toggleToolDetail(id) {
+  const el = document.getElementById(id);
+  if (el) el.classList.toggle('open');
+}
+
+function openToolTestDialog(toolName) {
+  const tool = toolsList.find(t => t.name === toolName);
+  if (!tool) return;
+
+  // Build input fields from parameters schema
+  let fieldsHtml = '';
+  const params = tool.parameters;
+  if (params && params.properties) {
+    for (const [key, schema] of Object.entries(params.properties)) {
+      const required = (params.required || []).includes(key);
+      const type = schema.type || 'string';
+      fieldsHtml += `
+        <div>
+          <div class="field-label">${escapeHtml(key)}${required ? ' *' : ''} <span style="color:var(--text-secondary);font-weight:400;font-size:11px;">(${type})</span></div>
+          ${schema.description ? '<div style="font-size:11px;color:var(--text-secondary);margin-bottom:4px;">' + escapeHtml(schema.description) + '</div>' : ''}
+          <input type="text" data-param="${escapeHtml(key)}" placeholder="${escapeHtml(schema.description || key)}">
+        </div>
+      `;
+    }
+  }
+  if (!fieldsHtml) {
+    fieldsHtml = '<div style="font-size:13px;color:var(--text-secondary);">This tool takes no parameters, or schema is unavailable.</div><div><div class="field-label">Raw JSON arguments</div><textarea data-param="__raw__" placeholder=\'{"key": "value"}\'></textarea></div>';
+  }
+
+  const backdrop = document.createElement('div');
+  backdrop.className = 'tool-test-dialog-backdrop';
+  backdrop.innerHTML = `
+    <div class="tool-test-dialog">
+      <h4>Test: ${escapeHtml(toolName)}</h4>
+      <div style="font-size:12px;color:var(--text-secondary);margin-bottom:12px;">${escapeHtml(tool.description || '')}</div>
+      <div id="toolTestFields">${fieldsHtml}</div>
+      <div class="dialog-actions">
+        <button class="btn-cancel" onclick="this.closest('.tool-test-dialog-backdrop').remove()">Cancel</button>
+        <button class="btn-run" id="toolTestRunBtn" onclick="runToolTest('${escapeHtml(toolName)}', this)">Run</button>
       </div>
-      <label class="tool-toggle-switch">
-        <input type="checkbox" ${t.enabled ? 'checked' : ''} onchange="toggleTool('${escapeHtml(t.name)}')">
-        <span class="tool-toggle-slider"></span>
-      </label>
+      <div id="toolTestResult" class="tool-test-result" style="display:none;"></div>
     </div>
-  `).join('');
+  `;
+  document.body.appendChild(backdrop);
+  // Close on backdrop click
+  backdrop.addEventListener('click', (e) => {
+    if (e.target === backdrop) backdrop.remove();
+  });
+}
+
+async function runToolTest(toolName, btn) {
+  const dialog = btn.closest('.tool-test-dialog');
+  const resultDiv = dialog.querySelector('#toolTestResult');
+  const fields = dialog.querySelectorAll('[data-param]');
+
+  let args = {};
+  let hasRaw = false;
+  fields.forEach(f => {
+    const key = f.getAttribute('data-param');
+    const val = f.value.trim();
+    if (key === '__raw__') {
+      if (val) {
+        try { args = JSON.parse(val); } catch (e) { args = {}; }
+      }
+      hasRaw = true;
+    } else if (val) {
+      // Try to parse as JSON for non-string types
+      try { args[key] = JSON.parse(val); } catch (e) { args[key] = val; }
+    }
+  });
+
+  btn.innerHTML = '<span class="loading-spinner"></span> Running...';
+  btn.disabled = true;
+  resultDiv.style.display = 'block';
+  resultDiv.textContent = 'Executing...';
+
+  try {
+    const res = await fetch('/api/tools/' + encodeURIComponent(toolName) + '/test', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(args),
+    });
+    const data = await res.json();
+    if (res.ok) {
+      resultDiv.textContent = typeof data.result === 'string' ? data.result : JSON.stringify(data.result, null, 2);
+      resultDiv.style.color = 'var(--accent)';
+    } else {
+      resultDiv.textContent = 'Error: ' + (data.error || data.detail || 'Unknown error');
+      resultDiv.style.color = 'var(--danger)';
+    }
+  } catch (e) {
+    resultDiv.textContent = 'Error: ' + e.message;
+    resultDiv.style.color = 'var(--danger)';
+  }
+  btn.textContent = 'Run';
+  btn.disabled = false;
 }
 
 async function toggleTool(name) {
@@ -2060,6 +2737,129 @@ async function toggleTool(name) {
     if (tool) tool.enabled = data.enabled;
   } catch (e) {
     console.error('Error toggling tool:', e);
+  }
+}
+
+// ── MCP Servers ────────────────────────────────────────────────────────
+let mcpServersList = [];
+
+async function loadMCPServers() {
+  try {
+    const res = await fetch('/api/mcp/servers');
+    if (!res.ok) return;
+    mcpServersList = await res.json();
+    renderMCPServerList();
+  } catch (e) {
+    console.warn('Failed to load MCP servers:', e);
+  }
+}
+
+function renderMCPServerList() {
+  const container = document.getElementById('mcpServerList');
+  if (!container) return;
+  if (mcpServersList.length === 0) {
+    container.innerHTML = '<div style="font-size:13px;color:var(--text-secondary);margin-bottom:8px;">No MCP servers connected.</div>';
+    return;
+  }
+  container.innerHTML = mcpServersList.map((s, idx) => {
+    const toolCount = (s.tools && s.tools.length) || 0;
+    const connected = s.status === 'connected';
+    const statusClass = connected ? 'connected' : 'disconnected';
+    const toolsId = 'mcp-tools-' + idx;
+    const toolsHtml = (s.tools || []).map(t =>
+      `<div class="mcp-tool-item">${escapeHtml(t.name || t)}${t.description ? ' — <span style="font-family:inherit;color:var(--text-secondary);">' + escapeHtml(t.description) + '</span>' : ''}</div>`
+    ).join('');
+    return `
+      <div class="mcp-server-card">
+        <div class="mcp-server-header">
+          <span class="status-dot ${statusClass}"></span>
+          <span class="mcp-server-name">${escapeHtml(s.name)}</span>
+          <span style="font-size:11px;color:var(--text-secondary);">${toolCount} tool${toolCount !== 1 ? 's' : ''}</span>
+        </div>
+        <div class="mcp-server-meta">Command: ${escapeHtml(s.command || 'N/A')} ${escapeHtml((s.args || []).join(' '))}</div>
+        <div class="mcp-server-actions">
+          ${toolCount > 0 ? '<button onclick="toggleMCPTools(\'' + toolsId + '\', this)">Show Tools</button>' : ''}
+          <button class="danger" onclick="removeMCPServer('${escapeHtml(s.name)}')">Disconnect</button>
+        </div>
+        <div class="mcp-server-tools" id="${toolsId}">${toolsHtml}</div>
+      </div>
+    `;
+  }).join('');
+}
+
+function toggleMCPTools(id, btn) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.classList.toggle('open');
+  if (btn) btn.textContent = el.classList.contains('open') ? 'Hide Tools' : 'Show Tools';
+}
+
+async function addMCPServer() {
+  const name = document.getElementById('mcpName').value.trim();
+  const command = document.getElementById('mcpCommand').value.trim();
+  const argsStr = document.getElementById('mcpArgs').value.trim();
+  const envStr = document.getElementById('mcpEnv').value.trim();
+
+  if (!name || !command) {
+    alert('Server name and command are required.');
+    return;
+  }
+
+  const args = argsStr ? argsStr.split(',').map(a => a.trim()).filter(Boolean) : [];
+  const env = {};
+  if (envStr) {
+    envStr.split(',').forEach(pair => {
+      const eqIdx = pair.indexOf('=');
+      if (eqIdx > 0) {
+        env[pair.slice(0, eqIdx).trim()] = pair.slice(eqIdx + 1).trim();
+      }
+    });
+  }
+
+  const btn = document.getElementById('mcpConnectBtn');
+  const origText = btn.textContent;
+  btn.innerHTML = '<span class="loading-spinner"></span> Connecting...';
+  btn.disabled = true;
+
+  try {
+    const res = await fetch('/api/mcp/servers', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name, command, args, env: Object.keys(env).length > 0 ? env : undefined }),
+    });
+    const data = await res.json();
+    if (!res.ok) {
+      alert('Failed to connect MCP server: ' + (data.error || data.detail || 'Unknown error'));
+    } else {
+      // Clear form
+      document.getElementById('mcpName').value = '';
+      document.getElementById('mcpCommand').value = '';
+      document.getElementById('mcpArgs').value = '';
+      document.getElementById('mcpEnv').value = '';
+      // Reload both servers and tools (MCP server may provide new tools)
+      await Promise.all([loadMCPServers(), loadTools()]);
+    }
+  } catch (e) {
+    alert('Error connecting MCP server: ' + e.message);
+  }
+
+  btn.textContent = origText;
+  btn.disabled = false;
+}
+
+async function removeMCPServer(name) {
+  if (!confirm('Disconnect MCP server "' + name + '"?')) return;
+  try {
+    const res = await fetch('/api/mcp/servers/' + encodeURIComponent(name), { method: 'DELETE' });
+    if (!res.ok) {
+      const data = await res.json();
+      alert('Failed to disconnect: ' + (data.error || data.detail || 'Unknown error'));
+      return;
+    }
+    // Reload both servers and tools
+    await Promise.all([loadMCPServers(), loadTools()]);
+  } catch (e) {
+    alert('Error disconnecting MCP server: ' + e.message);
   }
 }
 
