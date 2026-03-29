@@ -718,6 +718,77 @@ html, body {
   flex-shrink: 0;
 }
 .settings-gear:hover { color: var(--text); background: var(--hover); }
+
+/* ── Presets Section ──────────────────────────────────────────────── */
+.preset-selector {
+  width: 100%;
+  background: var(--input-bg);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--text);
+  padding: 8px 12px;
+  font-size: 13px;
+  outline: none;
+  cursor: pointer;
+  transition: border-color 0.2s;
+  margin-bottom: 10px;
+  appearance: none;
+  -webkit-appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23b4b4b4' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+}
+.preset-selector:focus { border-color: var(--accent); }
+.preset-selector option { background: var(--sidebar); color: var(--text); }
+
+.preset-btn-row {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 6px;
+}
+.preset-btn {
+  flex: 1;
+  padding: 7px 10px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: 12px;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+  white-space: nowrap;
+}
+.preset-btn:hover {
+  background: var(--hover);
+  color: var(--text);
+}
+.preset-btn.accent {
+  background: var(--accent);
+  color: white;
+  border-color: var(--accent);
+}
+.preset-btn.accent:hover {
+  background: var(--accent-hover);
+}
+.preset-btn.danger:hover {
+  border-color: var(--danger);
+  color: var(--danger);
+}
+
+.preset-active-label {
+  font-size: 11px;
+  color: var(--text-secondary);
+  margin-bottom: 8px;
+  font-style: italic;
+}
+
+@keyframes presetFlash {
+  0% { background-color: rgba(16, 163, 127, 0.15); }
+  100% { background-color: transparent; }
+}
+.settings-body.flash {
+  animation: presetFlash 0.8s ease-out;
+}
 </style>
 </head>
 <body>
@@ -782,7 +853,25 @@ html, body {
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
     </button>
   </div>
-  <div class="settings-body">
+  <div class="settings-body" id="settingsBody">
+    <!-- Presets -->
+    <div class="settings-section">
+      <div class="settings-section-title">Presets</div>
+      <div class="preset-active-label" id="presetActiveLabel">No preset active</div>
+      <select class="preset-selector" id="presetSelector">
+        <option value="">-- Select a preset --</option>
+      </select>
+      <div class="preset-btn-row">
+        <button class="preset-btn accent" onclick="loadSelectedPreset()">Load</button>
+        <button class="preset-btn" onclick="saveCurrentAsPreset()">Save As</button>
+        <button class="preset-btn danger" onclick="deleteSelectedPreset()">Delete</button>
+      </div>
+      <div class="preset-btn-row">
+        <button class="preset-btn" onclick="exportAllPresets()">Export All</button>
+        <button class="preset-btn" onclick="document.getElementById('presetImportInput').click()">Import</button>
+      </div>
+    </div>
+
     <!-- System Prompt -->
     <div class="settings-section">
       <div class="settings-section-title">System Prompt</div>
@@ -845,6 +934,8 @@ html, body {
   </div>
 </div>
 
+<input type="file" id="presetImportInput" accept=".json" style="display:none" onchange="importPresets(event)">
+
 <script>
 // ── State ──────────────────────────────────────────────────────────────
 let conversations = {};
@@ -870,6 +961,40 @@ const DEFAULT_SETTINGS = {
 
 let settings = { ...DEFAULT_SETTINGS };
 
+const PRESETS_KEY = 'qwen-chat-presets';
+const ACTIVE_PRESET_KEY = 'qwen-chat-active-preset';
+
+const DEFAULT_PRESETS = [
+  {
+    name: "Default Assistant",
+    systemPrompt: "You are a helpful assistant.",
+    temperature: 0.7, maxTokens: 8192, topP: 0.9, topK: 40, repeatPenalty: 1.1, minP: 0.05
+  },
+  {
+    name: "Code Expert",
+    systemPrompt: "You are an expert software engineer. Write clean, well-documented code. Use best practices. When asked to write code, provide complete working implementations.",
+    temperature: 0.3, maxTokens: 8192, topP: 0.95, topK: 40, repeatPenalty: 1.0, minP: 0.05
+  },
+  {
+    name: "Creative Writer",
+    systemPrompt: "You are a creative writer with a vivid imagination. Write engaging, original content with rich descriptions and compelling narratives.",
+    temperature: 1.2, maxTokens: 8192, topP: 0.95, topK: 60, repeatPenalty: 1.2, minP: 0.02
+  },
+  {
+    name: "Concise Analyst",
+    systemPrompt: "You are a precise analyst. Give direct, factual answers. Be concise. Use bullet points. No fluff.",
+    temperature: 0.2, maxTokens: 8192, topP: 0.8, topK: 20, repeatPenalty: 1.1, minP: 0.1
+  },
+  {
+    name: "Tutor",
+    systemPrompt: "You are a patient, encouraging tutor. Explain concepts step by step. Use analogies and examples. Check for understanding. Adapt to the student's level.",
+    temperature: 0.5, maxTokens: 8192, topP: 0.9, topK: 40, repeatPenalty: 1.0, minP: 0.05
+  },
+];
+
+let presets = [];
+let activePresetName = null;
+
 // ── DOM refs ───────────────────────────────────────────────────────────
 const chatArea = document.getElementById('chatArea');
 const messagesContainer = document.getElementById('messagesContainer');
@@ -883,6 +1008,7 @@ const sidebar = document.getElementById('sidebar');
 // ── Init ───────────────────────────────────────────────────────────────
 function init() {
   loadSettings();
+  loadPresets();
   loadConversations();
   renderConvList();
   if (activeConvId && conversations[activeConvId]) {
@@ -1136,6 +1262,8 @@ function openSettings() {
   document.getElementById('settingsMinP').value = settings.minP;
   document.getElementById('settingsMinPVal').textContent = settings.minP.toFixed(2);
 
+  populatePresetSelector();
+
   document.getElementById('settingsBackdrop').classList.add('open');
   document.getElementById('settingsPanel').classList.add('open');
 }
@@ -1159,7 +1287,197 @@ function saveAndCloseSettings() {
 
 function resetSettings() {
   settings = { ...DEFAULT_SETTINGS };
+  activePresetName = null;
+  saveActivePresetName();
   openSettings(); // Re-populate the UI with defaults
+}
+
+// ── Presets ──────────────────────────────────────────────────────────────
+function loadPresets() {
+  try {
+    const saved = localStorage.getItem(PRESETS_KEY);
+    if (saved) {
+      presets = JSON.parse(saved);
+    } else {
+      presets = JSON.parse(JSON.stringify(DEFAULT_PRESETS));
+      savePresetsToStorage();
+    }
+  } catch (e) {
+    presets = JSON.parse(JSON.stringify(DEFAULT_PRESETS));
+    savePresetsToStorage();
+  }
+  try {
+    activePresetName = localStorage.getItem(ACTIVE_PRESET_KEY) || null;
+  } catch (e) {
+    activePresetName = null;
+  }
+}
+
+function savePresetsToStorage() {
+  localStorage.setItem(PRESETS_KEY, JSON.stringify(presets));
+}
+
+function saveActivePresetName() {
+  localStorage.setItem(ACTIVE_PRESET_KEY, activePresetName || '');
+}
+
+function populatePresetSelector() {
+  const sel = document.getElementById('presetSelector');
+  sel.innerHTML = '<option value="">-- Select a preset --</option>';
+  presets.forEach(p => {
+    const opt = document.createElement('option');
+    opt.value = p.name;
+    opt.textContent = p.name;
+    sel.appendChild(opt);
+  });
+  if (activePresetName) {
+    sel.value = activePresetName;
+  }
+  updatePresetActiveLabel();
+}
+
+function updatePresetActiveLabel() {
+  const label = document.getElementById('presetActiveLabel');
+  if (activePresetName) {
+    label.textContent = 'Active: ' + activePresetName;
+  } else {
+    label.textContent = 'No preset active';
+  }
+}
+
+function loadSelectedPreset() {
+  const sel = document.getElementById('presetSelector');
+  const name = sel.value;
+  if (!name) { alert('Select a preset first.'); return; }
+  const preset = presets.find(p => p.name === name);
+  if (!preset) { alert('Preset not found.'); return; }
+
+  settings.systemPrompt = preset.systemPrompt;
+  settings.temperature = preset.temperature;
+  settings.maxTokens = preset.maxTokens;
+  settings.topP = preset.topP;
+  settings.topK = preset.topK;
+  settings.repeatPenalty = preset.repeatPenalty;
+  settings.minP = preset.minP;
+  saveSettings();
+
+  activePresetName = name;
+  saveActivePresetName();
+
+  // Refresh settings UI
+  document.getElementById('settingsSystemPrompt').value = settings.systemPrompt;
+  document.getElementById('settingsTemp').value = settings.temperature;
+  document.getElementById('settingsTempVal').textContent = settings.temperature.toFixed(1);
+  document.getElementById('settingsMaxTokens').value = settings.maxTokens;
+  document.getElementById('settingsTopP').value = settings.topP;
+  document.getElementById('settingsTopPVal').textContent = settings.topP.toFixed(2);
+  document.getElementById('settingsTopK').value = settings.topK;
+  document.getElementById('settingsRepeatPenalty').value = settings.repeatPenalty;
+  document.getElementById('settingsRepeatPenaltyVal').textContent = settings.repeatPenalty.toFixed(2);
+  document.getElementById('settingsMinP').value = settings.minP;
+  document.getElementById('settingsMinPVal').textContent = settings.minP.toFixed(2);
+
+  updatePresetActiveLabel();
+
+  // Flash confirmation
+  const body = document.getElementById('settingsBody');
+  body.classList.remove('flash');
+  void body.offsetWidth; // force reflow
+  body.classList.add('flash');
+}
+
+function saveCurrentAsPreset() {
+  const name = prompt('Preset name:');
+  if (!name || !name.trim()) return;
+  const trimmed = name.trim();
+
+  // Read current values from the settings form
+  const preset = {
+    name: trimmed,
+    systemPrompt: document.getElementById('settingsSystemPrompt').value || DEFAULT_SETTINGS.systemPrompt,
+    temperature: parseFloat(document.getElementById('settingsTemp').value),
+    maxTokens: parseInt(document.getElementById('settingsMaxTokens').value) || DEFAULT_SETTINGS.maxTokens,
+    topP: parseFloat(document.getElementById('settingsTopP').value),
+    topK: parseInt(document.getElementById('settingsTopK').value) || DEFAULT_SETTINGS.topK,
+    repeatPenalty: parseFloat(document.getElementById('settingsRepeatPenalty').value),
+    minP: parseFloat(document.getElementById('settingsMinP').value),
+  };
+
+  const existing = presets.findIndex(p => p.name === trimmed);
+  if (existing !== -1) {
+    if (!confirm('A preset named "' + trimmed + '" already exists. Overwrite?')) return;
+    presets[existing] = preset;
+  } else {
+    presets.push(preset);
+  }
+
+  savePresetsToStorage();
+  activePresetName = trimmed;
+  saveActivePresetName();
+  populatePresetSelector();
+}
+
+function deleteSelectedPreset() {
+  const sel = document.getElementById('presetSelector');
+  const name = sel.value;
+  if (!name) { alert('Select a preset first.'); return; }
+  if (!confirm('Delete preset "' + name + '"?')) return;
+
+  presets = presets.filter(p => p.name !== name);
+  savePresetsToStorage();
+
+  if (activePresetName === name) {
+    activePresetName = null;
+    saveActivePresetName();
+  }
+  populatePresetSelector();
+}
+
+function exportAllPresets() {
+  const data = { version: 1, presets: presets };
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'qwen-presets.json';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+function importPresets(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    try {
+      const data = JSON.parse(e.target.result);
+      if (!data.presets || !Array.isArray(data.presets)) {
+        alert('Invalid presets file: missing "presets" array.');
+        return;
+      }
+      let imported = 0;
+      for (const p of data.presets) {
+        if (!p.name) continue;
+        const existing = presets.findIndex(x => x.name === p.name);
+        if (existing !== -1) {
+          presets[existing] = p;
+        } else {
+          presets.push(p);
+        }
+        imported++;
+      }
+      savePresetsToStorage();
+      populatePresetSelector();
+      alert('Imported ' + imported + ' preset(s).');
+    } catch (err) {
+      alert('Failed to parse presets file: ' + err.message);
+    }
+  };
+  reader.readAsText(file);
+  // Reset input so same file can be imported again
+  event.target.value = '';
 }
 
 // ── Sidebar toggle ─────────────────────────────────────────────────────

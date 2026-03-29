@@ -1,0 +1,55 @@
+{
+  "version": 1,
+  "presets": [
+    {
+      "name": "Default Assistant",
+      "systemPrompt": "You are a helpful assistant.",
+      "temperature": 0.7,
+      "maxTokens": 8192,
+      "topP": 0.9,
+      "topK": 40,
+      "repeatPenalty": 1.1,
+      "minP": 0.05
+    },
+    {
+      "name": "Code Expert",
+      "systemPrompt": "You are an expert software engineer. Write clean, well-documented code. Use best practices. When asked to write code, provide complete working implementations.",
+      "temperature": 0.3,
+      "maxTokens": 8192,
+      "topP": 0.95,
+      "topK": 40,
+      "repeatPenalty": 1.0,
+      "minP": 0.05
+    },
+    {
+      "name": "Creative Writer",
+      "systemPrompt": "You are a creative writer with a vivid imagination. Write engaging, original content with rich descriptions and compelling narratives.",
+      "temperature": 1.2,
+      "maxTokens": 8192,
+      "topP": 0.95,
+      "topK": 60,
+      "repeatPenalty": 1.2,
+      "minP": 0.02
+    },
+    {
+      "name": "Concise Analyst",
+      "systemPrompt": "You are a precise analyst. Give direct, factual answers. Be concise. Use bullet points. No fluff.",
+      "temperature": 0.2,
+      "maxTokens": 8192,
+      "topP": 0.8,
+      "topK": 20,
+      "repeatPenalty": 1.1,
+      "minP": 0.1
+    },
+    {
+      "name": "Tutor",
+      "systemPrompt": "You are a patient, encouraging tutor. Explain concepts step by step. Use analogies and examples. Check for understanding. Adapt to the student's level.",
+      "temperature": 0.5,
+      "maxTokens": 8192,
+      "topP": 0.9,
+      "topK": 40,
+      "repeatPenalty": 1.0,
+      "minP": 0.05
+    }
+  ]
+}
