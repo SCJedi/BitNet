@@ -26,7 +26,7 @@ WEBUI_DIR = os.path.dirname(os.path.abspath(__file__))
 HOST = "127.0.0.1"
 PORT = 8080
 GPU_LAYERS = 99
-CONTEXT = 8192
+CONTEXT = 32768
 THREADS = 4
 # ───────────────────────────────────────────────────────────────────────────
 
@@ -45,6 +45,7 @@ def start_server():
         "--host", HOST,
         "--port", str(PORT),
         "--path", WEBUI_DIR,
+        "-rea", "off",  # Disable thinking/reasoning to save context
     ]
     print(f"Starting llama-server...")
     print(f"  Model : {os.path.basename(MODEL)}")
