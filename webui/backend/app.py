@@ -31,6 +31,7 @@ from .providers import (
     _PROVIDER_TYPES,
     _build_provider,
 )
+from .tools import ToolRegistry, register_builtin_tools, chat_with_tools
 
 # ── State ─────────────────────────────────────────────────────────────────
 
@@ -38,6 +39,7 @@ llama_process = None
 llama_base_url = f"http://{config.HOST}:{config.LLAMA_SERVER_PORT}"
 
 registry = ProviderRegistry()
+tool_registry = ToolRegistry()
 
 
 # ── llama-server management ───────────────────────────────────────────────
@@ -55,6 +57,7 @@ async def start_llama_server():
         "--host", config.HOST,
         "--port", str(config.LLAMA_SERVER_PORT),
         "-rea", "off",
+        "--jinja",
     ]
 
     print(f"Starting llama-server...")
@@ -135,6 +138,10 @@ async def lifespan(app: FastAPI):
 
     print(f"  Providers loaded: {', '.join(registry.providers.keys())}")
 
+    # Register built-in tools
+    register_builtin_tools(tool_registry)
+    print(f"  Tools loaded: {', '.join(t['name'] for t in tool_registry.list_tools())}")
+
     yield
     await stop_llama_server()
 
@@ -171,6 +178,30 @@ async def chat_completions(request: Request):
     for key in ("top_p", "top_k", "repeat_penalty", "min_p"):
         if key in body:
             extra[key] = body[key]
+
+    # Use tool-calling loop if tools are enabled
+    if tool_registry.has_enabled_tools():
+        async def stream_with_tools():
+            async for chunk in chat_with_tools(
+                provider=provider,
+                messages=messages,
+                registry=tool_registry,
+                temperature=temperature,
+                max_tokens=max_tokens,
+                model=model,
+                **extra,
+            ):
+                yield chunk
+
+        return StreamingResponse(
+            stream_with_tools(),
+            media_type="text/event-stream",
+            headers={
+                "Cache-Control": "no-cache",
+                "Connection": "keep-alive",
+                "X-Accel-Buffering": "no",
+            },
+        )
 
     async def stream_provider():
         async for chunk in provider.chat_stream(
@@ -238,6 +269,27 @@ async def delete_provider(provider_id: str):
     registry.remove(provider_id)
     registry.save_to_file(config.PROVIDERS_FILE)
     return {"status": "ok"}
+
+
+# ── Tool management API ──────────────────────────────────────────────────
+
+@app.get("/api/tools")
+async def list_tools():
+    """List all tools with enabled status."""
+    return tool_registry.list_tools()
+
+
+@app.post("/api/tools/{name}/toggle")
+async def toggle_tool(name: str):
+    """Toggle a tool's enabled/disabled status."""
+    tool = tool_registry.get(name)
+    if tool is None:
+        return JSONResponse(
+            status_code=404,
+            content={"error": f"Tool '{name}' not found."},
+        )
+    tool_registry.set_enabled(name, not tool.enabled)
+    return {"status": "ok", "name": name, "enabled": tool.enabled}
 
 
 # ── Proxy: /health ────────────────────────────────────────────────────────

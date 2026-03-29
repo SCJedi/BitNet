@@ -802,6 +802,130 @@ html, body {
 .settings-body.flash {
   animation: presetFlash 0.8s ease-out;
 }
+
+/* ── Tool Blocks ──────────────────────────────────────────────────── */
+.tool-block {
+  margin: 8px 0;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+  font-size: 13px;
+}
+.tool-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  background: rgba(255,255,255,0.03);
+  cursor: pointer;
+  transition: background 0.15s;
+  user-select: none;
+}
+.tool-header:hover { background: rgba(255,255,255,0.06); }
+.tool-icon { font-size: 14px; }
+.tool-name {
+  font-weight: 600;
+  color: var(--accent);
+  font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+}
+.tool-status { margin-left: auto; font-size: 12px; }
+.tool-status.pending { color: var(--text-secondary); }
+.tool-status.done { color: var(--accent); }
+.tool-status.error { color: var(--danger); }
+.tool-header .arrow { transition: transform 0.2s; font-size: 10px; }
+.tool-header .arrow.open { transform: rotate(90deg); }
+.tool-body {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.3s ease, padding 0.3s ease;
+}
+.tool-body.open {
+  max-height: 600px;
+  overflow-y: auto;
+}
+.tool-args, .tool-result {
+  padding: 8px 12px;
+  border-top: 1px solid rgba(255,255,255,0.05);
+}
+.tool-args pre, .tool-result pre {
+  margin: 0;
+  white-space: pre-wrap;
+  word-break: break-all;
+  font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--text-secondary);
+}
+.tool-args-label, .tool-result-label {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+  margin-bottom: 4px;
+  letter-spacing: 0.03em;
+}
+
+/* ── Tool Toggle in Settings ──────────────────────────────────────── */
+.tool-toggle-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--border);
+  font-size: 13px;
+}
+.tool-toggle-info {
+  flex: 1;
+  min-width: 0;
+}
+.tool-toggle-name {
+  font-weight: 600;
+  color: var(--text);
+  font-family: 'Consolas', monospace;
+  font-size: 13px;
+}
+.tool-toggle-desc {
+  font-size: 11px;
+  color: var(--text-secondary);
+  margin-top: 2px;
+}
+.tool-toggle-switch {
+  position: relative;
+  width: 40px;
+  height: 22px;
+  flex-shrink: 0;
+  margin-left: 12px;
+}
+.tool-toggle-switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+.tool-toggle-slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: var(--border);
+  border-radius: 22px;
+  transition: background 0.2s;
+}
+.tool-toggle-slider::before {
+  content: "";
+  position: absolute;
+  width: 16px;
+  height: 16px;
+  left: 3px;
+  bottom: 3px;
+  background: white;
+  border-radius: 50%;
+  transition: transform 0.2s;
+}
+.tool-toggle-switch input:checked + .tool-toggle-slider {
+  background: var(--accent);
+}
+.tool-toggle-switch input:checked + .tool-toggle-slider::before {
+  transform: translateX(18px);
+}
 </style>
 </head>
 <body>
@@ -944,6 +1068,12 @@ html, body {
       <div class="settings-info">Context: 32,768 tokens</div>
     </div>
 
+    <!-- Tools -->
+    <div class="settings-section">
+      <div class="settings-section-title">Tools</div>
+      <div id="toolList"></div>
+    </div>
+
     <!-- Providers -->
     <div class="settings-section">
       <div class="settings-section-title">Providers</div>
@@ -1001,6 +1131,7 @@ let currentTemp = 0.7;
 let currentMaxTokens = 8192;
 let currentProvider = 'local';
 let providersList = [];
+let toolsList = [];
 
 const STORAGE_KEY = 'qwen-chat-conversations';
 const ACTIVE_KEY = 'qwen-chat-active';
@@ -1073,6 +1204,7 @@ function init() {
   }
   setupTextarea();
   loadProviders();
+  loadTools();
 }
 
 // ── LocalStorage ───────────────────────────────────────────────────────
@@ -1662,6 +1794,19 @@ async function streamResponse(conv) {
 
         try {
           const data = JSON.parse(payload);
+
+          // Custom tool events from chat_with_tools
+          if (data.type === 'tool_call') {
+            appendToolCall(contentEl, data.name, data.arguments);
+            scrollToBottom();
+            continue;
+          }
+          if (data.type === 'tool_result') {
+            appendToolResult(contentEl, data.name, data.content);
+            scrollToBottom();
+            continue;
+          }
+
           const delta = data.choices?.[0]?.delta || {};
           const token = delta.content || '';
           const reasoning = delta.reasoning_content || '';
@@ -1871,6 +2016,129 @@ async function deleteProvider(id) {
   } catch (e) {
     alert('Error deleting provider: ' + e.message);
   }
+}
+
+// ── Tools ──────────────────────────────────────────────────────────────
+async function loadTools() {
+  try {
+    const res = await fetch('/api/tools');
+    if (!res.ok) return;
+    toolsList = await res.json();
+    renderToolList();
+  } catch (e) {
+    console.warn('Failed to load tools:', e);
+  }
+}
+
+function renderToolList() {
+  const container = document.getElementById('toolList');
+  if (!container) return;
+  if (toolsList.length === 0) {
+    container.innerHTML = '<div style="font-size:13px;color:var(--text-secondary);">No tools available.</div>';
+    return;
+  }
+  container.innerHTML = toolsList.map(t => `
+    <div class="tool-toggle-row">
+      <div class="tool-toggle-info">
+        <div class="tool-toggle-name">${escapeHtml(t.name)}</div>
+        <div class="tool-toggle-desc">${escapeHtml(t.description)}</div>
+      </div>
+      <label class="tool-toggle-switch">
+        <input type="checkbox" ${t.enabled ? 'checked' : ''} onchange="toggleTool('${escapeHtml(t.name)}')">
+        <span class="tool-toggle-slider"></span>
+      </label>
+    </div>
+  `).join('');
+}
+
+async function toggleTool(name) {
+  try {
+    const res = await fetch('/api/tools/' + encodeURIComponent(name) + '/toggle', { method: 'POST' });
+    if (!res.ok) { console.error('Failed to toggle tool'); return; }
+    const data = await res.json();
+    const tool = toolsList.find(t => t.name === name);
+    if (tool) tool.enabled = data.enabled;
+  } catch (e) {
+    console.error('Error toggling tool:', e);
+  }
+}
+
+function appendToolCall(contentEl, name, args) {
+  // Create a tool block for this call
+  const block = document.createElement('div');
+  block.className = 'tool-block';
+  block.setAttribute('data-tool-name', name);
+  block.innerHTML = `
+    <div class="tool-header" onclick="toggleToolBlock(this)">
+      <span class="tool-icon">\uD83D\uDD27</span>
+      <span class="tool-name">${escapeHtml(name)}</span>
+      <span class="tool-status pending">\u23F3</span>
+      <span class="arrow">\u25B8</span>
+    </div>
+    <div class="tool-body">
+      <div class="tool-args">
+        <div class="tool-args-label">Arguments</div>
+        <pre>${escapeHtml(typeof args === 'string' ? args : JSON.stringify(args, null, 2))}</pre>
+      </div>
+    </div>
+  `;
+  contentEl.appendChild(block);
+}
+
+function appendToolResult(contentEl, name, content) {
+  // Find the last tool block with this name that doesn't have a result yet
+  const blocks = contentEl.querySelectorAll('.tool-block[data-tool-name="' + name + '"]');
+  let block = null;
+  for (let i = blocks.length - 1; i >= 0; i--) {
+    if (!blocks[i].querySelector('.tool-result')) {
+      block = blocks[i];
+      break;
+    }
+  }
+  if (!block) {
+    // Fallback: create a standalone result block
+    block = document.createElement('div');
+    block.className = 'tool-block';
+    block.setAttribute('data-tool-name', name);
+    block.innerHTML = `
+      <div class="tool-header" onclick="toggleToolBlock(this)">
+        <span class="tool-icon">\uD83D\uDD27</span>
+        <span class="tool-name">${escapeHtml(name)}</span>
+        <span class="tool-status done">\u2713</span>
+        <span class="arrow">\u25B8</span>
+      </div>
+      <div class="tool-body">
+        <div class="tool-result">
+          <div class="tool-result-label">Result</div>
+          <pre>${escapeHtml(content)}</pre>
+        </div>
+      </div>
+    `;
+    contentEl.appendChild(block);
+    return;
+  }
+
+  // Update existing block
+  const status = block.querySelector('.tool-status');
+  const isError = content.startsWith('Error');
+  if (status) {
+    status.textContent = isError ? '\u2717' : '\u2713';
+    status.className = 'tool-status ' + (isError ? 'error' : 'done');
+  }
+  const body = block.querySelector('.tool-body');
+  if (body) {
+    const resultDiv = document.createElement('div');
+    resultDiv.className = 'tool-result';
+    resultDiv.innerHTML = `<div class="tool-result-label">Result</div><pre>${escapeHtml(content)}</pre>`;
+    body.appendChild(resultDiv);
+  }
+}
+
+function toggleToolBlock(header) {
+  const arrow = header.querySelector('.arrow');
+  const body = header.nextElementSibling;
+  if (arrow) arrow.classList.toggle('open');
+  if (body) body.classList.toggle('open');
 }
 
 // Restore saved provider on load
