@@ -184,6 +184,19 @@ html, body {
   white-space: nowrap;
 }
 
+.provider-select {
+  background: var(--input-bg);
+  color: var(--text-secondary);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 4px 8px;
+  font-size: 13px;
+  cursor: pointer;
+  outline: none;
+  max-width: 180px;
+}
+.provider-select:focus { border-color: var(--accent); }
+
 .topbar-spacer { flex: 1; }
 
 .topbar-control {
@@ -814,7 +827,10 @@ html, body {
       <button class="topbar-toggle" onclick="toggleSidebar()" title="Open sidebar">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
       </button>
-      <span class="model-name">Qwen3.5-9B</span>
+      <span class="model-name" id="modelName">Qwen3.5-9B</span>
+      <select id="providerSelect" class="provider-select" onchange="switchProvider(this.value)">
+        <option value="local">Local</option>
+      </select>
       <div class="topbar-spacer"></div>
       <button class="settings-gear" onclick="openSettings()" title="Settings">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
@@ -924,8 +940,47 @@ html, body {
     <!-- Display Info -->
     <div class="settings-section">
       <div class="settings-section-title">Display</div>
-      <div class="settings-info">Model: Qwen3.5-9B</div>
+      <div class="settings-info" id="displayModel">Model: Qwen3.5-9B</div>
       <div class="settings-info">Context: 32,768 tokens</div>
+    </div>
+
+    <!-- Providers -->
+    <div class="settings-section">
+      <div class="settings-section-title">Providers</div>
+      <div id="providerList" style="margin-bottom:10px;"></div>
+      <details style="margin-top:6px;">
+        <summary style="cursor:pointer;color:var(--accent);font-size:13px;">Add Provider</summary>
+        <div style="margin-top:8px;">
+          <div class="settings-field">
+            <label>ID (unique key)</label>
+            <input type="text" id="newProviderId" placeholder="e.g. openai" style="width:100%;background:var(--input-bg);border:1px solid var(--border);border-radius:6px;color:var(--text);padding:6px 10px;font-size:13px;">
+          </div>
+          <div class="settings-field">
+            <label>Name</label>
+            <input type="text" id="newProviderName" placeholder="e.g. OpenAI GPT-4o" style="width:100%;background:var(--input-bg);border:1px solid var(--border);border-radius:6px;color:var(--text);padding:6px 10px;font-size:13px;">
+          </div>
+          <div class="settings-field">
+            <label>Type</label>
+            <select id="newProviderType" style="width:100%;background:var(--input-bg);border:1px solid var(--border);border-radius:6px;color:var(--text);padding:6px 10px;font-size:13px;">
+              <option value="openai_compatible">OpenAI Compatible</option>
+              <option value="anthropic">Anthropic</option>
+            </select>
+          </div>
+          <div class="settings-field" id="newProviderBaseUrlField">
+            <label>Base URL</label>
+            <input type="text" id="newProviderBaseUrl" placeholder="https://api.openai.com/v1" style="width:100%;background:var(--input-bg);border:1px solid var(--border);border-radius:6px;color:var(--text);padding:6px 10px;font-size:13px;">
+          </div>
+          <div class="settings-field">
+            <label>API Key</label>
+            <input type="password" id="newProviderApiKey" placeholder="sk-... or ${ENV_VAR}" style="width:100%;background:var(--input-bg);border:1px solid var(--border);border-radius:6px;color:var(--text);padding:6px 10px;font-size:13px;">
+          </div>
+          <div class="settings-field">
+            <label>Default Model</label>
+            <input type="text" id="newProviderModel" placeholder="e.g. gpt-4o" style="width:100%;background:var(--input-bg);border:1px solid var(--border);border-radius:6px;color:var(--text);padding:6px 10px;font-size:13px;">
+          </div>
+          <button onclick="addProvider()" style="margin-top:6px;padding:6px 16px;background:var(--accent);color:white;border:none;border-radius:6px;cursor:pointer;font-size:13px;">Add</button>
+        </div>
+      </details>
     </div>
   </div>
   <div class="settings-footer">
@@ -944,6 +999,8 @@ let isGenerating = false;
 let abortController = null;
 let currentTemp = 0.7;
 let currentMaxTokens = 8192;
+let currentProvider = 'local';
+let providersList = [];
 
 const STORAGE_KEY = 'qwen-chat-conversations';
 const ACTIVE_KEY = 'qwen-chat-active';
@@ -1015,6 +1072,7 @@ function init() {
     switchConversation(activeConvId);
   }
   setupTextarea();
+  loadProviders();
 }
 
 // ── LocalStorage ───────────────────────────────────────────────────────
@@ -1563,7 +1621,8 @@ async function streamResponse(conv) {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        model: 'qwen3.5-9b',
+        provider: currentProvider,
+        model: currentProviderModel(),
         messages: apiMessages,
         stream: true,
         temperature: currentTemp,
@@ -1709,6 +1768,117 @@ function escapeHtml(str) {
 }
 
 // ── Boot ───────────────────────────────────────────────────────────────
+// ── Providers ──────────────────────────────────────────────────────────
+async function loadProviders() {
+  try {
+    const res = await fetch('/api/providers');
+    if (!res.ok) return;
+    providersList = await res.json();
+    const sel = document.getElementById('providerSelect');
+    sel.innerHTML = '';
+    providersList.forEach(p => {
+      const opt = document.createElement('option');
+      opt.value = p.id;
+      opt.textContent = p.name;
+      if (p.id === currentProvider) opt.selected = true;
+      sel.appendChild(opt);
+    });
+    // Update model name display for current provider
+    updateProviderDisplay();
+    renderProviderList();
+  } catch (e) {
+    console.warn('Failed to load providers:', e);
+  }
+}
+
+function switchProvider(id) {
+  currentProvider = id;
+  localStorage.setItem('chat-active-provider', id);
+  updateProviderDisplay();
+}
+
+function updateProviderDisplay() {
+  const prov = providersList.find(p => p.id === currentProvider);
+  if (prov) {
+    document.getElementById('modelName').textContent = prov.name;
+    const dm = document.getElementById('displayModel');
+    if (dm) dm.textContent = 'Provider: ' + prov.name + (prov.default_model ? ' (' + prov.default_model + ')' : '');
+  }
+}
+
+function currentProviderModel() {
+  const prov = providersList.find(p => p.id === currentProvider);
+  return prov ? (prov.default_model || '') : 'qwen3.5-9b';
+}
+
+function renderProviderList() {
+  const container = document.getElementById('providerList');
+  if (!container) return;
+  container.innerHTML = '';
+  providersList.forEach(p => {
+    const row = document.createElement('div');
+    row.style.cssText = 'display:flex;align-items:center;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border);font-size:13px;';
+    const info = document.createElement('span');
+    info.textContent = p.name + ' (' + p.type + ')';
+    info.style.color = 'var(--text)';
+    row.appendChild(info);
+    if (p.id !== 'local') {
+      const del = document.createElement('button');
+      del.textContent = 'Delete';
+      del.style.cssText = 'background:transparent;color:var(--danger);border:1px solid var(--danger);border-radius:4px;padding:2px 8px;cursor:pointer;font-size:12px;';
+      del.onclick = () => deleteProvider(p.id);
+      row.appendChild(del);
+    }
+    container.appendChild(row);
+  });
+}
+
+async function addProvider() {
+  const id = document.getElementById('newProviderId').value.trim();
+  const name = document.getElementById('newProviderName').value.trim();
+  const type = document.getElementById('newProviderType').value;
+  const baseUrl = document.getElementById('newProviderBaseUrl').value.trim();
+  const apiKey = document.getElementById('newProviderApiKey').value.trim();
+  const model = document.getElementById('newProviderModel').value.trim();
+  if (!id || !name) { alert('ID and Name are required.'); return; }
+  const cfg = { type, name, base_url: baseUrl, api_key: apiKey, default_model: model };
+  try {
+    const res = await fetch('/api/providers/' + encodeURIComponent(id), {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(cfg),
+    });
+    if (!res.ok) { const e = await res.json(); alert(e.error || 'Failed'); return; }
+    // Clear form
+    document.getElementById('newProviderId').value = '';
+    document.getElementById('newProviderName').value = '';
+    document.getElementById('newProviderBaseUrl').value = '';
+    document.getElementById('newProviderApiKey').value = '';
+    document.getElementById('newProviderModel').value = '';
+    await loadProviders();
+  } catch (e) {
+    alert('Error adding provider: ' + e.message);
+  }
+}
+
+async function deleteProvider(id) {
+  if (!confirm('Delete provider "' + id + '"?')) return;
+  try {
+    const res = await fetch('/api/providers/' + encodeURIComponent(id), { method: 'DELETE' });
+    if (!res.ok) { const e = await res.json(); alert(e.error || 'Failed'); return; }
+    if (currentProvider === id) { currentProvider = 'local'; }
+    await loadProviders();
+  } catch (e) {
+    alert('Error deleting provider: ' + e.message);
+  }
+}
+
+// Restore saved provider on load
+(function() {
+  const saved = localStorage.getItem('chat-active-provider');
+  if (saved) currentProvider = saved;
+})();
+
 init();
 </script>
 </body>
