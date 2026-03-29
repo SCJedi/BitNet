@@ -862,7 +862,19 @@ async function handleSend() {
   conv.messages.push({ role: 'assistant', content: '' });
   appendMessageToDOM('assistant', '');
 
-  await streamResponse(conv);
+  try {
+    await streamResponse(conv);
+  } catch (e) {
+    console.error('handleSend error:', e);
+  } finally {
+    // Always reset state so user can send again
+    isGenerating = false;
+    abortController = null;
+    sendBtn.style.display = 'flex';
+    stopBtn.style.display = 'none';
+    sendBtn.disabled = false;
+    userInput.focus();
+  }
 }
 
 function appendMessageToDOM(role, content) {
@@ -996,21 +1008,21 @@ async function streamResponse(conv) {
   if (reasoningText) {
     assistantMsg.reasoning = reasoningText;
   }
+  // Build final HTML
+  let finalHtml = '';
+  if (reasoningText) {
+    finalHtml += `<div class="think-block"><button class="think-toggle" onclick="toggleThink(this)"><span class="arrow">&#9654;</span> Thinking</button><div class="think-content">${renderMarkdown(reasoningText)}</div></div>`;
+  }
   if (assistantMsg.content) {
-    let html = '';
-    if (reasoningText) {
-      html += `<div class="think-block"><button class="think-toggle" onclick="toggleThink(this)"><span class="arrow">&#9654;</span> Thinking</button><div class="think-content">${renderMarkdown(reasoningText)}</div></div>`;
-    }
-    html += renderAssistantContent(assistantMsg.content);
-    contentEl.innerHTML = html;
-  } else if (reasoningText && !assistantMsg.content) {
-    // Model only produced reasoning with no content — show it
-    assistantMsg.content = '*(No response after thinking)*';
-    contentEl.innerHTML = `<div class="think-block"><button class="think-toggle" onclick="toggleThink(this)"><span class="arrow open">&#9654;</span> Thinking</button><div class="think-content open">${renderMarkdown(reasoningText)}</div></div><p><em>(No response after thinking)</em></p>`;
+    finalHtml += renderAssistantContent(assistantMsg.content);
+  }
+  if (finalHtml) {
+    contentEl.innerHTML = finalHtml;
   } else {
-    // Remove empty assistant message
+    // No content at all — remove placeholder
+    assistantMsg.content = '';
     conv.messages.pop();
-    msgEl.remove();
+    if (msgEl && msgEl.parentNode) msgEl.remove();
   }
   saveConversations();
   renderConvList();
