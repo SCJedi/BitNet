@@ -1,0 +1,1009 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Qwen3.5-9B Chat</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>&#x1F4AC;</text></svg>">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/marked/12.0.1/marked.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<style>
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+:root {
+  --bg: #212121;
+  --sidebar: #171717;
+  --user-msg: #2f2f2f;
+  --assistant-msg: transparent;
+  --text: #ececec;
+  --text-secondary: #b4b4b4;
+  --accent: #10a37f;
+  --accent-hover: #1a7f64;
+  --input-bg: #2f2f2f;
+  --border: #424242;
+  --hover: #2a2a2a;
+  --danger: #ef4444;
+  --sidebar-width: 260px;
+}
+
+html, body {
+  height: 100%;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  overflow: hidden;
+}
+
+/* ── Layout ─────────────────────────────────────────────────────────── */
+.app {
+  display: flex;
+  height: 100vh;
+}
+
+/* ── Sidebar ────────────────────────────────────────────────────────── */
+.sidebar {
+  width: var(--sidebar-width);
+  min-width: var(--sidebar-width);
+  background: var(--sidebar);
+  display: flex;
+  flex-direction: column;
+  border-right: 1px solid var(--border);
+  transition: margin-left 0.3s ease, opacity 0.3s ease;
+  z-index: 100;
+}
+
+.sidebar.hidden {
+  margin-left: calc(-1 * var(--sidebar-width));
+  opacity: 0;
+  pointer-events: none;
+}
+
+.sidebar-header {
+  padding: 12px;
+  display: flex;
+  gap: 8px;
+}
+
+.new-chat-btn {
+  flex: 1;
+  padding: 10px 16px;
+  background: transparent;
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: background 0.15s;
+}
+.new-chat-btn:hover { background: var(--hover); }
+.new-chat-btn svg { width: 18px; height: 18px; }
+
+.sidebar-toggle {
+  width: 40px;
+  height: 40px;
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s;
+  flex-shrink: 0;
+}
+.sidebar-toggle:hover { background: var(--hover); }
+
+.conversation-list {
+  flex: 1;
+  overflow-y: auto;
+  padding: 4px 8px;
+}
+.conversation-list::-webkit-scrollbar { width: 4px; }
+.conversation-list::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+
+.conv-item {
+  padding: 10px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  color: var(--text-secondary);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  transition: background 0.15s;
+  margin-bottom: 2px;
+}
+.conv-item:hover { background: var(--hover); }
+.conv-item.active { background: var(--hover); color: var(--text); }
+.conv-item-title {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.conv-item-delete {
+  opacity: 0;
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  cursor: pointer;
+  padding: 2px 4px;
+  border-radius: 4px;
+  font-size: 16px;
+  line-height: 1;
+  transition: opacity 0.15s, color 0.15s;
+  flex-shrink: 0;
+}
+.conv-item:hover .conv-item-delete { opacity: 1; }
+.conv-item-delete:hover { color: var(--danger); }
+
+/* ── Main ───────────────────────────────────────────────────────────── */
+.main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  position: relative;
+}
+
+/* ── Top Bar ────────────────────────────────────────────────────────── */
+.topbar {
+  display: flex;
+  align-items: center;
+  padding: 8px 16px;
+  border-bottom: 1px solid var(--border);
+  gap: 12px;
+  flex-shrink: 0;
+  min-height: 52px;
+}
+
+.topbar-toggle {
+  display: none;
+  width: 36px;
+  height: 36px;
+  background: transparent;
+  border: none;
+  color: var(--text);
+  cursor: pointer;
+  border-radius: 6px;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.topbar-toggle:hover { background: var(--hover); }
+
+.model-name {
+  font-size: 16px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.topbar-spacer { flex: 1; }
+
+.topbar-control {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+.topbar-control label { white-space: nowrap; }
+.topbar-control input[type="range"] {
+  width: 80px;
+  accent-color: var(--accent);
+  cursor: pointer;
+}
+.topbar-control input[type="number"] {
+  width: 64px;
+  background: var(--input-bg);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  color: var(--text);
+  padding: 2px 6px;
+  font-size: 12px;
+}
+.topbar-control .value { min-width: 28px; text-align: center; }
+
+/* ── Chat Area ──────────────────────────────────────────────────────── */
+.chat-area {
+  flex: 1;
+  overflow-y: auto;
+  padding: 0;
+  scroll-behavior: smooth;
+}
+.chat-area::-webkit-scrollbar { width: 6px; }
+.chat-area::-webkit-scrollbar-thumb { background: var(--border); border-radius: 6px; }
+
+.chat-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: var(--text-secondary);
+  gap: 12px;
+  padding: 20px;
+}
+.chat-empty h2 { font-size: 24px; color: var(--text); font-weight: 600; }
+.chat-empty p { font-size: 14px; }
+
+.messages-container {
+  max-width: 768px;
+  margin: 0 auto;
+  padding: 16px 24px 100px;
+  width: 100%;
+}
+
+/* ── Message ────────────────────────────────────────────────────────── */
+.message {
+  display: flex;
+  gap: 16px;
+  padding: 16px 0;
+  animation: fadeIn 0.2s ease;
+}
+@keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+
+.message + .message { border-top: 1px solid rgba(255,255,255,0.05); }
+
+.message-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  font-weight: 700;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+.message-avatar.user { background: #5436DA; color: white; }
+.message-avatar.assistant { background: var(--accent); color: white; }
+
+.message-content {
+  flex: 1;
+  min-width: 0;
+  font-size: 15px;
+  line-height: 1.7;
+}
+.message-content.user-content {
+  color: var(--text);
+}
+
+/* ── Markdown Styling ───────────────────────────────────────────────── */
+.message-content p { margin-bottom: 12px; }
+.message-content p:last-child { margin-bottom: 0; }
+.message-content ul, .message-content ol { margin: 8px 0 12px 20px; }
+.message-content li { margin-bottom: 4px; }
+.message-content h1, .message-content h2, .message-content h3,
+.message-content h4, .message-content h5, .message-content h6 {
+  margin: 20px 0 8px;
+  font-weight: 600;
+}
+.message-content h1 { font-size: 1.5em; }
+.message-content h2 { font-size: 1.3em; }
+.message-content h3 { font-size: 1.15em; }
+.message-content blockquote {
+  border-left: 3px solid var(--accent);
+  padding: 4px 16px;
+  margin: 8px 0;
+  color: var(--text-secondary);
+}
+.message-content table {
+  border-collapse: collapse;
+  margin: 12px 0;
+  width: 100%;
+}
+.message-content th, .message-content td {
+  border: 1px solid var(--border);
+  padding: 8px 12px;
+  text-align: left;
+}
+.message-content th { background: rgba(255,255,255,0.05); font-weight: 600; }
+.message-content a { color: var(--accent); text-decoration: none; }
+.message-content a:hover { text-decoration: underline; }
+.message-content hr { border: none; border-top: 1px solid var(--border); margin: 16px 0; }
+
+/* ── Inline code ────────────────────────────────────────────────────── */
+.message-content code:not(pre code) {
+  background: rgba(255,255,255,0.1);
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 0.9em;
+  font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+}
+
+/* ── Code blocks ────────────────────────────────────────────────────── */
+.code-block {
+  position: relative;
+  margin: 12px 0;
+  border-radius: 8px;
+  overflow: hidden;
+  background: #0d1117;
+}
+.code-block-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 6px 12px;
+  background: rgba(255,255,255,0.05);
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+.copy-btn {
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  transition: color 0.15s, background 0.15s;
+}
+.copy-btn:hover { color: var(--text); background: rgba(255,255,255,0.1); }
+.copy-btn.copied { color: var(--accent); }
+.code-block pre {
+  margin: 0;
+  padding: 16px;
+  overflow-x: auto;
+  font-size: 13px;
+  line-height: 1.5;
+}
+.code-block pre::-webkit-scrollbar { height: 4px; }
+.code-block pre::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+.code-block pre code {
+  font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+}
+
+/* ── Think blocks ───────────────────────────────────────────────────── */
+.think-block {
+  margin: 8px 0 12px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+}
+.think-toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  background: rgba(255,255,255,0.03);
+  cursor: pointer;
+  font-size: 13px;
+  color: var(--text-secondary);
+  border: none;
+  width: 100%;
+  text-align: left;
+  transition: background 0.15s;
+}
+.think-toggle:hover { background: rgba(255,255,255,0.06); }
+.think-toggle .arrow { transition: transform 0.2s; font-size: 10px; }
+.think-toggle .arrow.open { transform: rotate(90deg); }
+.think-content {
+  padding: 0 12px;
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.3s ease, padding 0.3s ease;
+  font-size: 13px;
+  color: var(--text-secondary);
+  line-height: 1.6;
+}
+.think-content.open {
+  padding: 12px;
+  max-height: 2000px;
+}
+
+/* ── Typing indicator ───────────────────────────────────────────────── */
+.typing-indicator {
+  display: inline-flex;
+  gap: 4px;
+  padding: 4px 0;
+}
+.typing-indicator span {
+  width: 6px;
+  height: 6px;
+  background: var(--text-secondary);
+  border-radius: 50%;
+  animation: bounce 1.4s infinite ease-in-out both;
+}
+.typing-indicator span:nth-child(1) { animation-delay: -0.32s; }
+.typing-indicator span:nth-child(2) { animation-delay: -0.16s; }
+@keyframes bounce {
+  0%, 80%, 100% { transform: scale(0); }
+  40% { transform: scale(1); }
+}
+
+/* ── Cursor blink during streaming ──────────────────────────────────── */
+.streaming-cursor::after {
+  content: '\u258C';
+  animation: blink 1s step-end infinite;
+  color: var(--text-secondary);
+}
+@keyframes blink { 50% { opacity: 0; } }
+
+/* ── Input Area ─────────────────────────────────────────────────────── */
+.input-area {
+  padding: 12px 24px 20px;
+  max-width: 768px;
+  margin: 0 auto;
+  width: 100%;
+  position: relative;
+}
+.input-wrapper {
+  position: relative;
+  background: var(--input-bg);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  transition: border-color 0.2s;
+}
+.input-wrapper:focus-within { border-color: var(--accent); }
+
+.input-wrapper textarea {
+  width: 100%;
+  padding: 14px 52px 14px 18px;
+  background: transparent;
+  border: none;
+  color: var(--text);
+  font-size: 15px;
+  line-height: 1.5;
+  resize: none;
+  outline: none;
+  font-family: inherit;
+  max-height: 200px;
+  overflow-y: auto;
+}
+.input-wrapper textarea::placeholder { color: var(--text-secondary); }
+.input-wrapper textarea::-webkit-scrollbar { width: 4px; }
+.input-wrapper textarea::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+
+.send-btn, .stop-btn {
+  position: absolute;
+  right: 10px;
+  bottom: 10px;
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s, opacity 0.15s;
+}
+.send-btn {
+  background: var(--accent);
+  color: white;
+}
+.send-btn:hover { background: var(--accent-hover); }
+.send-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+
+.stop-btn {
+  background: var(--border);
+  color: var(--text);
+}
+.stop-btn:hover { background: #555; }
+
+.input-footer {
+  text-align: center;
+  padding-top: 8px;
+  font-size: 11px;
+  color: rgba(180,180,180,0.5);
+}
+
+/* ── Responsive ─────────────────────────────────────────────────────── */
+@media (max-width: 768px) {
+  .sidebar {
+    position: fixed;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    z-index: 1000;
+  }
+  .sidebar.hidden { margin-left: calc(-1 * var(--sidebar-width)); }
+  .topbar-toggle { display: flex; }
+  .sidebar-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.5);
+    z-index: 999;
+  }
+  .messages-container { padding: 16px 16px 100px; }
+  .input-area { padding: 12px 16px 16px; }
+  .topbar-control.desktop-only { display: none; }
+}
+</style>
+</head>
+<body>
+
+<div class="app">
+  <!-- Sidebar -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <button class="new-chat-btn" onclick="newConversation()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        New chat
+      </button>
+      <button class="sidebar-toggle" onclick="toggleSidebar()" title="Close sidebar">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3h18v18H3z"/><path d="M9 3v18"/></svg>
+      </button>
+    </div>
+    <div class="conversation-list" id="convList"></div>
+  </aside>
+
+  <!-- Main Area -->
+  <div class="main">
+    <div class="topbar">
+      <button class="topbar-toggle" onclick="toggleSidebar()" title="Open sidebar">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      </button>
+      <span class="model-name">Qwen3.5-9B</span>
+      <div class="topbar-spacer"></div>
+      <div class="topbar-control desktop-only">
+        <label>Temp</label>
+        <input type="range" id="tempSlider" min="0" max="2" step="0.1" value="0.7" oninput="updateTemp(this.value)">
+        <span class="value" id="tempValue">0.7</span>
+      </div>
+      <div class="topbar-control desktop-only">
+        <label>Max tokens</label>
+        <input type="number" id="maxTokensInput" value="2048" min="64" max="8192" step="64" onchange="updateMaxTokens(this.value)">
+      </div>
+    </div>
+
+    <div class="chat-area" id="chatArea">
+      <div class="chat-empty" id="emptyState">
+        <h2>Qwen3.5-9B</h2>
+        <p>How can I help you today?</p>
+      </div>
+      <div class="messages-container" id="messagesContainer" style="display:none;"></div>
+    </div>
+
+    <div class="input-area">
+      <div class="input-wrapper">
+        <textarea id="userInput" rows="1" placeholder="Message Qwen3.5-9B..." autofocus></textarea>
+        <button class="send-btn" id="sendBtn" onclick="handleSend()" title="Send message (Enter)">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
+        </button>
+        <button class="stop-btn" id="stopBtn" onclick="stopGeneration()" title="Stop generating" style="display:none;">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><rect x="4" y="4" width="16" height="16" rx="2"/></svg>
+        </button>
+      </div>
+      <div class="input-footer">Qwen3.5-9B may produce inaccurate information. Running locally via llama.cpp.</div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── State ──────────────────────────────────────────────────────────────
+let conversations = {};
+let activeConvId = null;
+let isGenerating = false;
+let abortController = null;
+let currentTemp = 0.7;
+let currentMaxTokens = 2048;
+
+const STORAGE_KEY = 'qwen-chat-conversations';
+const ACTIVE_KEY = 'qwen-chat-active';
+
+// ── DOM refs ───────────────────────────────────────────────────────────
+const chatArea = document.getElementById('chatArea');
+const messagesContainer = document.getElementById('messagesContainer');
+const emptyState = document.getElementById('emptyState');
+const convList = document.getElementById('convList');
+const userInput = document.getElementById('userInput');
+const sendBtn = document.getElementById('sendBtn');
+const stopBtn = document.getElementById('stopBtn');
+const sidebar = document.getElementById('sidebar');
+
+// ── Init ───────────────────────────────────────────────────────────────
+function init() {
+  loadConversations();
+  renderConvList();
+  if (activeConvId && conversations[activeConvId]) {
+    switchConversation(activeConvId);
+  }
+  setupTextarea();
+}
+
+// ── LocalStorage ───────────────────────────────────────────────────────
+function loadConversations() {
+  try {
+    const data = localStorage.getItem(STORAGE_KEY);
+    if (data) conversations = JSON.parse(data);
+    activeConvId = localStorage.getItem(ACTIVE_KEY);
+  } catch (e) {
+    conversations = {};
+    activeConvId = null;
+  }
+}
+
+function saveConversations() {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(conversations));
+  localStorage.setItem(ACTIVE_KEY, activeConvId || '');
+}
+
+// ── Conversations ──────────────────────────────────────────────────────
+function genId() {
+  return 'conv-' + Date.now() + '-' + Math.random().toString(36).slice(2, 8);
+}
+
+function newConversation() {
+  const id = genId();
+  conversations[id] = { id, title: 'New Chat', messages: [], createdAt: Date.now() };
+  activeConvId = id;
+  saveConversations();
+  renderConvList();
+  renderMessages();
+  userInput.focus();
+}
+
+function switchConversation(id) {
+  if (!conversations[id]) return;
+  activeConvId = id;
+  saveConversations();
+  renderConvList();
+  renderMessages();
+}
+
+function deleteConversation(id, event) {
+  event.stopPropagation();
+  if (!confirm('Delete this conversation?')) return;
+  delete conversations[id];
+  if (activeConvId === id) {
+    const ids = Object.keys(conversations).sort((a, b) => conversations[b].createdAt - conversations[a].createdAt);
+    activeConvId = ids[0] || null;
+  }
+  saveConversations();
+  renderConvList();
+  renderMessages();
+}
+
+function getConvTitle(conv) {
+  if (conv.messages.length === 0) return 'New Chat';
+  const first = conv.messages.find(m => m.role === 'user');
+  if (!first) return 'New Chat';
+  const t = first.content.slice(0, 40);
+  return t.length < first.content.length ? t + '...' : t;
+}
+
+// ── Render sidebar ─────────────────────────────────────────────────────
+function renderConvList() {
+  const sorted = Object.values(conversations).sort((a, b) => b.createdAt - a.createdAt);
+  convList.innerHTML = sorted.map(c => `
+    <div class="conv-item ${c.id === activeConvId ? 'active' : ''}" onclick="switchConversation('${c.id}')">
+      <span class="conv-item-title">${escapeHtml(getConvTitle(c))}</span>
+      <button class="conv-item-delete" onclick="deleteConversation('${c.id}', event)" title="Delete">&times;</button>
+    </div>
+  `).join('');
+}
+
+// ── Render messages ────────────────────────────────────────────────────
+function renderMessages() {
+  if (!activeConvId || !conversations[activeConvId]) {
+    emptyState.style.display = 'flex';
+    messagesContainer.style.display = 'none';
+    messagesContainer.innerHTML = '';
+    return;
+  }
+  const msgs = conversations[activeConvId].messages;
+  if (msgs.length === 0) {
+    emptyState.style.display = 'flex';
+    messagesContainer.style.display = 'none';
+    messagesContainer.innerHTML = '';
+    return;
+  }
+  emptyState.style.display = 'none';
+  messagesContainer.style.display = 'block';
+  messagesContainer.innerHTML = msgs.map(m => createMessageHTML(m.role, m.content)).join('');
+  processCodeBlocks();
+  scrollToBottom();
+}
+
+function createMessageHTML(role, content) {
+  const avatar = role === 'user'
+    ? '<div class="message-avatar user">Y</div>'
+    : '<div class="message-avatar assistant">Q</div>';
+  const rendered = role === 'assistant' ? renderAssistantContent(content) : escapeHtml(content).replace(/\n/g, '<br>');
+  return `<div class="message"><div>${avatar}</div><div class="message-content ${role === 'user' ? 'user-content' : ''}">${rendered}</div></div>`;
+}
+
+function renderAssistantContent(text) {
+  // Handle <think> blocks
+  let thinkContent = '';
+  let mainContent = text;
+  const thinkRegex = /<think>([\s\S]*?)<\/think>/g;
+  let match;
+  while ((match = thinkRegex.exec(text)) !== null) {
+    thinkContent += match[1];
+  }
+  mainContent = text.replace(thinkRegex, '').trim();
+  // Also handle unclosed think tag during streaming
+  const unclosedThink = mainContent.match(/<think>([\s\S]*)$/);
+  if (unclosedThink) {
+    thinkContent += unclosedThink[1];
+    mainContent = mainContent.replace(/<think>[\s\S]*$/, '').trim();
+  }
+
+  let html = '';
+  if (thinkContent.trim()) {
+    const renderedThink = renderMarkdown(thinkContent.trim());
+    html += `<div class="think-block">
+      <button class="think-toggle" onclick="toggleThink(this)">
+        <span class="arrow">&#9654;</span> Thinking...
+      </button>
+      <div class="think-content">${renderedThink}</div>
+    </div>`;
+  }
+  if (mainContent) {
+    html += renderMarkdown(mainContent);
+  }
+  return html || '<div class="typing-indicator"><span></span><span></span><span></span></div>';
+}
+
+function renderMarkdown(text) {
+  marked.setOptions({
+    highlight: function(code, lang) {
+      if (lang && hljs.getLanguage(lang)) {
+        return hljs.highlight(code, { language: lang }).value;
+      }
+      return hljs.highlightAuto(code).value;
+    },
+    breaks: true,
+    gfm: true,
+  });
+  // Custom renderer for code blocks with copy button
+  const renderer = new marked.Renderer();
+  renderer.code = function(obj) {
+    const code = typeof obj === 'object' ? obj.text : obj;
+    const lang = typeof obj === 'object' ? (obj.lang || '') : (arguments[1] || '');
+    let highlighted;
+    if (lang && hljs.getLanguage(lang)) {
+      highlighted = hljs.highlight(code, { language: lang }).value;
+    } else {
+      highlighted = hljs.highlightAuto(code).value;
+    }
+    const langLabel = lang || 'code';
+    return `<div class="code-block">
+      <div class="code-block-header">
+        <span>${escapeHtml(langLabel)}</span>
+        <button class="copy-btn" onclick="copyCode(this)">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+          Copy
+        </button>
+      </div>
+      <pre><code class="hljs">${highlighted}</code></pre>
+    </div>`;
+  };
+  return marked.parse(text, { renderer });
+}
+
+function processCodeBlocks() {
+  // Already handled via custom renderer
+}
+
+function toggleThink(btn) {
+  const arrow = btn.querySelector('.arrow');
+  const content = btn.nextElementSibling;
+  arrow.classList.toggle('open');
+  content.classList.toggle('open');
+}
+
+function copyCode(btn) {
+  const codeEl = btn.closest('.code-block').querySelector('code');
+  navigator.clipboard.writeText(codeEl.textContent).then(() => {
+    btn.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> Copied!`;
+    btn.classList.add('copied');
+    setTimeout(() => {
+      btn.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg> Copy`;
+      btn.classList.remove('copied');
+    }, 2000);
+  });
+}
+
+// ── Textarea auto-resize ───────────────────────────────────────────────
+function setupTextarea() {
+  userInput.addEventListener('input', autoResize);
+  userInput.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      handleSend();
+    }
+  });
+}
+
+function autoResize() {
+  userInput.style.height = 'auto';
+  userInput.style.height = Math.min(userInput.scrollHeight, 200) + 'px';
+}
+
+// ── Controls ───────────────────────────────────────────────────────────
+function updateTemp(val) {
+  currentTemp = parseFloat(val);
+  document.getElementById('tempValue').textContent = currentTemp.toFixed(1);
+}
+
+function updateMaxTokens(val) {
+  currentMaxTokens = parseInt(val) || 2048;
+}
+
+// ── Sidebar toggle ─────────────────────────────────────────────────────
+function toggleSidebar() {
+  sidebar.classList.toggle('hidden');
+}
+
+// ── Send message ───────────────────────────────────────────────────────
+async function handleSend() {
+  const text = userInput.value.trim();
+  if (!text || isGenerating) return;
+
+  // Create conversation if needed
+  if (!activeConvId) newConversation();
+
+  const conv = conversations[activeConvId];
+  conv.messages.push({ role: 'user', content: text });
+  conv.title = getConvTitle(conv);
+  saveConversations();
+
+  userInput.value = '';
+  userInput.style.height = 'auto';
+
+  renderMessages();
+  renderConvList();
+
+  // Add assistant placeholder
+  conv.messages.push({ role: 'assistant', content: '' });
+  appendMessageToDOM('assistant', '');
+
+  await streamResponse(conv);
+}
+
+function appendMessageToDOM(role, content) {
+  emptyState.style.display = 'none';
+  messagesContainer.style.display = 'block';
+
+  const div = document.createElement('div');
+  div.innerHTML = createMessageHTML(role, content || '\u200B');
+  const msgEl = div.firstElementChild;
+  messagesContainer.appendChild(msgEl);
+  scrollToBottom();
+  return msgEl;
+}
+
+// ── Stream response ────────────────────────────────────────────────────
+async function streamResponse(conv) {
+  isGenerating = true;
+  sendBtn.style.display = 'none';
+  stopBtn.style.display = 'flex';
+  sendBtn.disabled = true;
+
+  abortController = new AbortController();
+  const assistantMsg = conv.messages[conv.messages.length - 1];
+  const msgEl = messagesContainer.lastElementChild;
+  const contentEl = msgEl.querySelector('.message-content');
+
+  // Show typing indicator
+  contentEl.innerHTML = '<div class="typing-indicator"><span></span><span></span><span></span></div>';
+
+  // Build messages array for API (exclude the empty assistant message)
+  const apiMessages = conv.messages.slice(0, -1).map(m => ({ role: m.role, content: m.content }));
+
+  try {
+    const response = await fetch('/v1/chat/completions', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'qwen3.5-9b',
+        messages: apiMessages,
+        stream: true,
+        temperature: currentTemp,
+        max_tokens: currentMaxTokens,
+      }),
+      signal: abortController.signal,
+    });
+
+    if (!response.ok) {
+      throw new Error(`Server error: ${response.status} ${response.statusText}`);
+    }
+
+    const reader = response.body.getReader();
+    const decoder = new TextDecoder();
+    let fullText = '';
+    let buffer = '';
+    let firstToken = true;
+
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+
+      buffer += decoder.decode(value, { stream: true });
+      const lines = buffer.split('\n');
+      buffer = lines.pop() || '';
+
+      for (const line of lines) {
+        const trimmed = line.trim();
+        if (!trimmed || !trimmed.startsWith('data: ')) continue;
+        const payload = trimmed.slice(6);
+        if (payload === '[DONE]') continue;
+
+        try {
+          const data = JSON.parse(payload);
+          const token = data.choices?.[0]?.delta?.content || '';
+          if (token) {
+            if (firstToken) {
+              contentEl.innerHTML = '';
+              firstToken = false;
+            }
+            fullText += token;
+            assistantMsg.content = fullText;
+            contentEl.innerHTML = renderAssistantContent(fullText);
+            contentEl.classList.add('streaming-cursor');
+            scrollToBottom();
+          }
+        } catch (e) {
+          // skip malformed JSON
+        }
+      }
+    }
+  } catch (e) {
+    if (e.name === 'AbortError') {
+      // User stopped generation
+      if (!assistantMsg.content) {
+        assistantMsg.content = '*(Generation stopped)*';
+      }
+    } else {
+      console.error('Stream error:', e);
+      assistantMsg.content = `**Error:** ${e.message}`;
+    }
+  }
+
+  // Finalize
+  contentEl.classList.remove('streaming-cursor');
+  if (assistantMsg.content) {
+    contentEl.innerHTML = renderAssistantContent(assistantMsg.content);
+  } else {
+    // Remove empty assistant message
+    conv.messages.pop();
+    msgEl.remove();
+  }
+  saveConversations();
+  renderConvList();
+
+  isGenerating = false;
+  abortController = null;
+  sendBtn.style.display = 'flex';
+  stopBtn.style.display = 'none';
+  sendBtn.disabled = false;
+  userInput.focus();
+}
+
+function stopGeneration() {
+  if (abortController) {
+    abortController.abort();
+  }
+}
+
+// ── Scroll ─────────────────────────────────────────────────────────────
+function scrollToBottom() {
+  chatArea.scrollTop = chatArea.scrollHeight;
+}
+
+// ── Escape HTML ────────────────────────────────────────────────────────
+function escapeHtml(str) {
+  const div = document.createElement('div');
+  div.textContent = str;
+  return div.innerHTML;
+}
+
+// ── Boot ───────────────────────────────────────────────────────────────
+init();
+</script>
+</body>
+</html>
