@@ -916,6 +916,7 @@ async function streamResponse(conv) {
     const reader = response.body.getReader();
     const decoder = new TextDecoder();
     let fullText = '';
+    let reasoningText = '';
     let buffer = '';
     let firstToken = true;
 
@@ -935,7 +936,26 @@ async function streamResponse(conv) {
 
         try {
           const data = JSON.parse(payload);
-          const token = data.choices?.[0]?.delta?.content || '';
+          const delta = data.choices?.[0]?.delta || {};
+          const token = delta.content || '';
+          const reasoning = delta.reasoning_content || '';
+
+          // Handle reasoning (think) tokens
+          if (reasoning) {
+            if (firstToken) {
+              contentEl.innerHTML = '';
+              firstToken = false;
+            }
+            if (!fullText && !reasoningText) {
+              reasoningText = '';
+            }
+            reasoningText = (reasoningText || '') + reasoning;
+            // Show thinking indicator with live reasoning
+            contentEl.innerHTML = `<div class="think-block"><button class="think-toggle" onclick="toggleThink(this)"><span class="arrow open">&#9654;</span> Thinking...</button><div class="think-content open">${renderMarkdown(reasoningText)}</div></div>`;
+            scrollToBottom();
+          }
+
+          // Handle content tokens (the actual response)
           if (token) {
             if (firstToken) {
               contentEl.innerHTML = '';
@@ -943,7 +963,13 @@ async function streamResponse(conv) {
             }
             fullText += token;
             assistantMsg.content = fullText;
-            contentEl.innerHTML = renderAssistantContent(fullText);
+            // If there was reasoning, prepend collapsed think block
+            let html = '';
+            if (reasoningText) {
+              html += `<div class="think-block"><button class="think-toggle" onclick="toggleThink(this)"><span class="arrow">&#9654;</span> Thinking</button><div class="think-content">${renderMarkdown(reasoningText)}</div></div>`;
+            }
+            html += renderAssistantContent(fullText);
+            contentEl.innerHTML = html;
             contentEl.classList.add('streaming-cursor');
             scrollToBottom();
           }
@@ -966,8 +992,21 @@ async function streamResponse(conv) {
 
   // Finalize
   contentEl.classList.remove('streaming-cursor');
+  // Store reasoning separately if present
+  if (reasoningText) {
+    assistantMsg.reasoning = reasoningText;
+  }
   if (assistantMsg.content) {
-    contentEl.innerHTML = renderAssistantContent(assistantMsg.content);
+    let html = '';
+    if (reasoningText) {
+      html += `<div class="think-block"><button class="think-toggle" onclick="toggleThink(this)"><span class="arrow">&#9654;</span> Thinking</button><div class="think-content">${renderMarkdown(reasoningText)}</div></div>`;
+    }
+    html += renderAssistantContent(assistantMsg.content);
+    contentEl.innerHTML = html;
+  } else if (reasoningText && !assistantMsg.content) {
+    // Model only produced reasoning with no content — show it
+    assistantMsg.content = '*(No response after thinking)*';
+    contentEl.innerHTML = `<div class="think-block"><button class="think-toggle" onclick="toggleThink(this)"><span class="arrow open">&#9654;</span> Thinking</button><div class="think-content open">${renderMarkdown(reasoningText)}</div></div><p><em>(No response after thinking)</em></p>`;
   } else {
     // Remove empty assistant message
     conv.messages.pop();
