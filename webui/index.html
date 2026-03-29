@@ -519,7 +519,205 @@ html, body {
   .messages-container { padding: 16px 16px 100px; }
   .input-area { padding: 12px 16px 16px; }
   .topbar-control.desktop-only { display: none; }
+  .settings-panel { width: 340px; }
 }
+
+/* ── Settings Panel ────────────────────────────────────────────────── */
+.settings-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.5);
+  z-index: 2000;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+}
+.settings-backdrop.open {
+  opacity: 1;
+  pointer-events: all;
+}
+
+.settings-panel {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 380px;
+  max-width: 100vw;
+  background: var(--sidebar);
+  border-left: 1px solid var(--border);
+  z-index: 2001;
+  display: flex;
+  flex-direction: column;
+  transform: translateX(100%);
+  transition: transform 0.3s ease;
+  overflow: hidden;
+}
+.settings-panel.open {
+  transform: translateX(0);
+}
+
+.settings-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+.settings-header h3 {
+  font-size: 16px;
+  font-weight: 600;
+}
+.settings-close-btn {
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.15s, background 0.15s;
+}
+.settings-close-btn:hover {
+  color: var(--text);
+  background: var(--hover);
+}
+
+.settings-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px;
+}
+.settings-body::-webkit-scrollbar { width: 4px; }
+.settings-body::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+
+.settings-section {
+  margin-bottom: 24px;
+}
+.settings-section-title {
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-secondary);
+  margin-bottom: 12px;
+}
+
+.settings-field {
+  margin-bottom: 16px;
+}
+.settings-field label {
+  display: block;
+  font-size: 13px;
+  color: var(--text);
+  margin-bottom: 6px;
+}
+.settings-field .field-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.settings-field input[type="range"] {
+  flex: 1;
+  accent-color: var(--accent);
+  cursor: pointer;
+}
+.settings-field .field-value {
+  min-width: 36px;
+  text-align: right;
+  font-size: 13px;
+  color: var(--accent);
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+}
+.settings-field input[type="number"] {
+  width: 100%;
+  background: var(--input-bg);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--text);
+  padding: 8px 12px;
+  font-size: 13px;
+  outline: none;
+  transition: border-color 0.2s;
+}
+.settings-field input[type="number"]:focus {
+  border-color: var(--accent);
+}
+.settings-field textarea {
+  width: 100%;
+  background: var(--input-bg);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--text);
+  padding: 10px 12px;
+  font-size: 13px;
+  line-height: 1.5;
+  resize: vertical;
+  outline: none;
+  font-family: inherit;
+  min-height: 80px;
+  transition: border-color 0.2s;
+}
+.settings-field textarea:focus {
+  border-color: var(--accent);
+}
+
+.settings-info {
+  font-size: 13px;
+  color: var(--text-secondary);
+  padding: 8px 12px;
+  background: var(--input-bg);
+  border-radius: 6px;
+  margin-bottom: 8px;
+}
+
+.settings-footer {
+  display: flex;
+  gap: 8px;
+  padding: 16px 20px;
+  border-top: 1px solid var(--border);
+  flex-shrink: 0;
+}
+.settings-footer button {
+  flex: 1;
+  padding: 10px 16px;
+  border-radius: 8px;
+  border: none;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.btn-save {
+  background: var(--accent);
+  color: white;
+}
+.btn-save:hover { background: var(--accent-hover); }
+.btn-reset {
+  background: transparent;
+  color: var(--text-secondary);
+  border: 1px solid var(--border) !important;
+}
+.btn-reset:hover { background: var(--hover); color: var(--text); }
+
+.settings-gear {
+  width: 36px;
+  height: 36px;
+  background: transparent;
+  border: none;
+  color: var(--text-secondary);
+  cursor: pointer;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.15s, background 0.15s;
+  flex-shrink: 0;
+}
+.settings-gear:hover { color: var(--text); background: var(--hover); }
 </style>
 </head>
 <body>
@@ -547,15 +745,9 @@ html, body {
       </button>
       <span class="model-name">Qwen3.5-9B</span>
       <div class="topbar-spacer"></div>
-      <div class="topbar-control desktop-only">
-        <label>Temp</label>
-        <input type="range" id="tempSlider" min="0" max="2" step="0.1" value="0.7" oninput="updateTemp(this.value)">
-        <span class="value" id="tempValue">0.7</span>
-      </div>
-      <div class="topbar-control desktop-only">
-        <label>Max tokens</label>
-        <input type="number" id="maxTokensInput" value="8192" min="64" max="8192" step="64" onchange="updateMaxTokens(this.value)">
-      </div>
+      <button class="settings-gear" onclick="openSettings()" title="Settings">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+      </button>
     </div>
 
     <div class="chat-area" id="chatArea">
@@ -581,6 +773,78 @@ html, body {
   </div>
 </div>
 
+<!-- Settings Panel -->
+<div class="settings-backdrop" id="settingsBackdrop" onclick="closeSettings()"></div>
+<div class="settings-panel" id="settingsPanel">
+  <div class="settings-header">
+    <h3>Settings</h3>
+    <button class="settings-close-btn" onclick="closeSettings()" title="Close">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    </button>
+  </div>
+  <div class="settings-body">
+    <!-- System Prompt -->
+    <div class="settings-section">
+      <div class="settings-section-title">System Prompt</div>
+      <div class="settings-field">
+        <textarea id="settingsSystemPrompt" rows="4" placeholder="You are a helpful assistant."></textarea>
+      </div>
+    </div>
+
+    <!-- Generation Settings -->
+    <div class="settings-section">
+      <div class="settings-section-title">Generation</div>
+      <div class="settings-field">
+        <label>Temperature</label>
+        <div class="field-row">
+          <input type="range" id="settingsTemp" min="0" max="2" step="0.1" value="0.7" oninput="document.getElementById('settingsTempVal').textContent = parseFloat(this.value).toFixed(1)">
+          <span class="field-value" id="settingsTempVal">0.7</span>
+        </div>
+      </div>
+      <div class="settings-field">
+        <label>Max Tokens</label>
+        <input type="number" id="settingsMaxTokens" value="8192" min="64" max="32768" step="64">
+      </div>
+      <div class="settings-field">
+        <label>Top P</label>
+        <div class="field-row">
+          <input type="range" id="settingsTopP" min="0" max="1" step="0.05" value="0.9" oninput="document.getElementById('settingsTopPVal').textContent = parseFloat(this.value).toFixed(2)">
+          <span class="field-value" id="settingsTopPVal">0.90</span>
+        </div>
+      </div>
+      <div class="settings-field">
+        <label>Top K</label>
+        <input type="number" id="settingsTopK" value="40" min="0" max="200" step="1">
+      </div>
+      <div class="settings-field">
+        <label>Repeat Penalty</label>
+        <div class="field-row">
+          <input type="range" id="settingsRepeatPenalty" min="0.8" max="2" step="0.05" value="1.1" oninput="document.getElementById('settingsRepeatPenaltyVal').textContent = parseFloat(this.value).toFixed(2)">
+          <span class="field-value" id="settingsRepeatPenaltyVal">1.10</span>
+        </div>
+      </div>
+      <div class="settings-field">
+        <label>Min P</label>
+        <div class="field-row">
+          <input type="range" id="settingsMinP" min="0" max="0.5" step="0.01" value="0.05" oninput="document.getElementById('settingsMinPVal').textContent = parseFloat(this.value).toFixed(2)">
+          <span class="field-value" id="settingsMinPVal">0.05</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Display Info -->
+    <div class="settings-section">
+      <div class="settings-section-title">Display</div>
+      <div class="settings-info">Model: Qwen3.5-9B</div>
+      <div class="settings-info">Context: 32,768 tokens</div>
+    </div>
+  </div>
+  <div class="settings-footer">
+    <button class="btn-reset" onclick="resetSettings()">Reset Defaults</button>
+    <button class="btn-save" onclick="saveAndCloseSettings()">Save &amp; Close</button>
+  </div>
+</div>
+
 <script>
 // ── State ──────────────────────────────────────────────────────────────
 let conversations = {};
@@ -592,6 +856,19 @@ let currentMaxTokens = 8192;
 
 const STORAGE_KEY = 'qwen-chat-conversations';
 const ACTIVE_KEY = 'qwen-chat-active';
+const SETTINGS_KEY = 'qwen-chat-settings';
+
+const DEFAULT_SETTINGS = {
+  systemPrompt: 'You are a helpful assistant.',
+  temperature: 0.7,
+  maxTokens: 8192,
+  topP: 0.9,
+  topK: 40,
+  repeatPenalty: 1.1,
+  minP: 0.05,
+};
+
+let settings = { ...DEFAULT_SETTINGS };
 
 // ── DOM refs ───────────────────────────────────────────────────────────
 const chatArea = document.getElementById('chatArea');
@@ -605,6 +882,7 @@ const sidebar = document.getElementById('sidebar');
 
 // ── Init ───────────────────────────────────────────────────────────────
 function init() {
+  loadSettings();
   loadConversations();
   renderConvList();
   if (activeConvId && conversations[activeConvId]) {
@@ -824,14 +1102,64 @@ function autoResize() {
   userInput.style.height = Math.min(userInput.scrollHeight, 200) + 'px';
 }
 
-// ── Controls ───────────────────────────────────────────────────────────
-function updateTemp(val) {
-  currentTemp = parseFloat(val);
-  document.getElementById('tempValue').textContent = currentTemp.toFixed(1);
+// ── Settings ────────────────────────────────────────────────────────────
+function loadSettings() {
+  try {
+    const saved = localStorage.getItem(SETTINGS_KEY);
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      settings = { ...DEFAULT_SETTINGS, ...parsed };
+    }
+  } catch (e) {
+    settings = { ...DEFAULT_SETTINGS };
+  }
+  currentTemp = settings.temperature;
+  currentMaxTokens = settings.maxTokens;
 }
 
-function updateMaxTokens(val) {
-  currentMaxTokens = parseInt(val) || 8192;
+function saveSettings() {
+  localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
+  currentTemp = settings.temperature;
+  currentMaxTokens = settings.maxTokens;
+}
+
+function openSettings() {
+  document.getElementById('settingsSystemPrompt').value = settings.systemPrompt;
+  document.getElementById('settingsTemp').value = settings.temperature;
+  document.getElementById('settingsTempVal').textContent = settings.temperature.toFixed(1);
+  document.getElementById('settingsMaxTokens').value = settings.maxTokens;
+  document.getElementById('settingsTopP').value = settings.topP;
+  document.getElementById('settingsTopPVal').textContent = settings.topP.toFixed(2);
+  document.getElementById('settingsTopK').value = settings.topK;
+  document.getElementById('settingsRepeatPenalty').value = settings.repeatPenalty;
+  document.getElementById('settingsRepeatPenaltyVal').textContent = settings.repeatPenalty.toFixed(2);
+  document.getElementById('settingsMinP').value = settings.minP;
+  document.getElementById('settingsMinPVal').textContent = settings.minP.toFixed(2);
+
+  document.getElementById('settingsBackdrop').classList.add('open');
+  document.getElementById('settingsPanel').classList.add('open');
+}
+
+function closeSettings() {
+  document.getElementById('settingsBackdrop').classList.remove('open');
+  document.getElementById('settingsPanel').classList.remove('open');
+}
+
+function saveAndCloseSettings() {
+  settings.systemPrompt = document.getElementById('settingsSystemPrompt').value || DEFAULT_SETTINGS.systemPrompt;
+  settings.temperature = parseFloat(document.getElementById('settingsTemp').value);
+  settings.maxTokens = parseInt(document.getElementById('settingsMaxTokens').value) || DEFAULT_SETTINGS.maxTokens;
+  settings.topP = parseFloat(document.getElementById('settingsTopP').value);
+  settings.topK = parseInt(document.getElementById('settingsTopK').value) || DEFAULT_SETTINGS.topK;
+  settings.repeatPenalty = parseFloat(document.getElementById('settingsRepeatPenalty').value);
+  settings.minP = parseFloat(document.getElementById('settingsMinP').value);
+  saveSettings();
+  closeSettings();
+}
+
+function resetSettings() {
+  settings = { ...DEFAULT_SETTINGS };
+  openSettings(); // Re-populate the UI with defaults
 }
 
 // ── Sidebar toggle ─────────────────────────────────────────────────────
@@ -905,7 +1233,12 @@ async function streamResponse(conv) {
   contentEl.innerHTML = '<div class="typing-indicator"><span></span><span></span><span></span></div>';
 
   // Build messages array for API (exclude the empty assistant message)
-  const apiMessages = conv.messages.slice(0, -1).map(m => ({ role: m.role, content: m.content }));
+  const apiMessages = [];
+  // Prepend system prompt
+  if (settings.systemPrompt && settings.systemPrompt.trim()) {
+    apiMessages.push({ role: 'system', content: settings.systemPrompt.trim() });
+  }
+  apiMessages.push(...conv.messages.slice(0, -1).map(m => ({ role: m.role, content: m.content })));
 
   try {
     const response = await fetch('/v1/chat/completions', {
@@ -917,6 +1250,10 @@ async function streamResponse(conv) {
         stream: true,
         temperature: currentTemp,
         max_tokens: currentMaxTokens,
+        top_p: settings.topP,
+        top_k: settings.topK,
+        repeat_penalty: settings.repeatPenalty,
+        min_p: settings.minP,
       }),
       signal: abortController.signal,
     });
