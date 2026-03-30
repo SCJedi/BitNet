@@ -176,6 +176,144 @@ async def tool_python_eval(code: str) -> str:
         return f"Error running Python: {e}"
 
 
+# ── Project-Aware Tools ─────────────────────────────────────────────────
+
+HONE_TOOLS_DIR = config.PROJECT_ROOT / "tools"
+
+
+async def tool_search_files(query: str, path: str = ".") -> str:
+    """Grep for a pattern across files. Returns matching lines with filenames."""
+    try:
+        search_path = Path(path) if Path(path).is_absolute() else config.PROJECT_ROOT / path
+        proc = await asyncio.create_subprocess_exec(
+            "grep", "-rn", "--include=*.py", "--include=*.js", "--include=*.html",
+            "--include=*.md", "--include=*.json", "--include=*.txt", "--include=*.yaml",
+            "--include=*.yml", "--include=*.toml", "--include=*.cfg",
+            "-l", query, str(search_path),
+            stdout=asyncio.subprocess.PIPE,
+            stderr=asyncio.subprocess.PIPE,
+            cwd=str(config.PROJECT_ROOT),
+        )
+        try:
+            stdout, stderr = await asyncio.wait_for(proc.communicate(), timeout=15)
+        except asyncio.TimeoutError:
+            proc.kill()
+            return "Error: Search timed out after 15s"
+        output = stdout.decode("utf-8", errors="replace")
+        if not output.strip():
+            return f"No files found matching '{query}'"
+        lines = output.strip().split("\n")
+        if len(lines) > 30:
+            return "\n".join(lines[:30]) + f"\n... ({len(lines)} files total, showing first 30)"
+        return output.strip()
+    except Exception as e:
+        return f"Error searching: {e}"
+
+
+async def tool_git_status() -> str:
+    """Get git status of the current project."""
+    try:
+        proc = await asyncio.create_subprocess_exec(
+            "git", "status", "--short",
+            stdout=asyncio.subprocess.PIPE,
+            stderr=asyncio.subprocess.STDOUT,
+            cwd=str(config.PROJECT_ROOT),
+        )
+        stdout, _ = await asyncio.wait_for(proc.communicate(), timeout=10)
+        output = stdout.decode("utf-8", errors="replace")
+        return output.strip() if output.strip() else "(working tree clean)"
+    except Exception as e:
+        return f"Error: {e}"
+
+
+async def tool_git_diff() -> str:
+    """Get git diff of unstaged changes."""
+    try:
+        proc = await asyncio.create_subprocess_exec(
+            "git", "diff", "--stat",
+            stdout=asyncio.subprocess.PIPE,
+            stderr=asyncio.subprocess.STDOUT,
+            cwd=str(config.PROJECT_ROOT),
+        )
+        stdout, _ = await asyncio.wait_for(proc.communicate(), timeout=10)
+        output = stdout.decode("utf-8", errors="replace")
+        if len(output) > 3000:
+            output = output[:3000] + "\n... (truncated)"
+        return output.strip() if output.strip() else "(no changes)"
+    except Exception as e:
+        return f"Error: {e}"
+
+
+async def tool_git_log(count: int = 10) -> str:
+    """Get recent git log entries."""
+    try:
+        n = min(max(1, count), 30)
+        proc = await asyncio.create_subprocess_exec(
+            "git", "log", f"--oneline", f"-{n}",
+            stdout=asyncio.subprocess.PIPE,
+            stderr=asyncio.subprocess.STDOUT,
+            cwd=str(config.PROJECT_ROOT),
+        )
+        stdout, _ = await asyncio.wait_for(proc.communicate(), timeout=10)
+        return stdout.decode("utf-8", errors="replace").strip()
+    except Exception as e:
+        return f"Error: {e}"
+
+
+async def _run_hone_tool(tool_module: str, text: str, extra_args: list[str] | None = None) -> str:
+    """Helper to run a hone-tool CLI module with stdin input."""
+    try:
+        cmd = [sys.executable, "-m", f"hone_tools.cli.{tool_module}"]
+        if extra_args:
+            cmd.extend(extra_args)
+        proc = await asyncio.create_subprocess_exec(
+            *cmd,
+            stdin=asyncio.subprocess.PIPE,
+            stdout=asyncio.subprocess.PIPE,
+            stderr=asyncio.subprocess.PIPE,
+            cwd=str(HONE_TOOLS_DIR),
+        )
+        try:
+            stdout, stderr = await asyncio.wait_for(
+                proc.communicate(input=text.encode("utf-8")),
+                timeout=60,
+            )
+        except asyncio.TimeoutError:
+            proc.kill()
+            return "Error: Tool timed out after 60s"
+        output = stdout.decode("utf-8", errors="replace").strip()
+        if not output and stderr:
+            return f"Error: {stderr.decode('utf-8', errors='replace').strip()}"
+        return output if output else "(no output)"
+    except Exception as e:
+        return f"Error running hone tool: {e}"
+
+
+async def tool_classify(text: str, categories: str = "positive,negative,neutral") -> str:
+    """Classify text into one of the given categories."""
+    return await _run_hone_tool("classify", text, ["-l", categories])
+
+
+async def tool_summarize(text: str, sentences: int = 3) -> str:
+    """Summarize text into N sentences."""
+    return await _run_hone_tool("summarize", text, ["-n", str(sentences)])
+
+
+async def tool_extract(text: str, types: str = "email,phone,url") -> str:
+    """Extract structured data (emails, phones, URLs, dates, names) from text."""
+    return await _run_hone_tool("extract", text, ["-t", types])
+
+
+async def tool_regex(description: str) -> str:
+    """Generate a regex pattern from a natural language description."""
+    return await _run_hone_tool("regex", description)
+
+
+async def tool_sql(description: str, dialect: str = "sqlite") -> str:
+    """Generate a SQL query from a natural language description."""
+    return await _run_hone_tool("sql", description, ["--dialect", dialect])
+
+
 def register_builtin_tools(registry: ToolRegistry) -> None:
     """Register all built-in tools."""
     registry.register(ToolDefinition(
@@ -260,6 +398,119 @@ def register_builtin_tools(registry: ToolRegistry) -> None:
             "required": ["code"],
         },
         callable=tool_python_eval,
+    ))
+
+    # ── Project-aware tools ──────────────────────────────────────────────
+
+    registry.register(ToolDefinition(
+        name="search_files",
+        description="Search for a text pattern across project files. Returns matching filenames.",
+        parameters={
+            "type": "object",
+            "properties": {
+                "query": {"type": "string", "description": "The text pattern to search for"},
+                "path": {"type": "string", "description": "Subdirectory to search in (default: whole project)"},
+            },
+            "required": ["query"],
+        },
+        callable=tool_search_files,
+    ))
+
+    registry.register(ToolDefinition(
+        name="git_status",
+        description="Get git status showing modified, added, and untracked files.",
+        parameters={"type": "object", "properties": {}},
+        callable=tool_git_status,
+    ))
+
+    registry.register(ToolDefinition(
+        name="git_diff",
+        description="Get a summary of unstaged git changes.",
+        parameters={"type": "object", "properties": {}},
+        callable=tool_git_diff,
+    ))
+
+    registry.register(ToolDefinition(
+        name="git_log",
+        description="Get recent git commit history.",
+        parameters={
+            "type": "object",
+            "properties": {
+                "count": {"type": "integer", "description": "Number of commits to show (default 10, max 30)"},
+            },
+        },
+        callable=tool_git_log,
+    ))
+
+    # ── hone-tools bridges ───────────────────────────────────────────────
+
+    registry.register(ToolDefinition(
+        name="classify",
+        description="Classify text into one of the given categories. Good for sentiment, urgency, topic.",
+        parameters={
+            "type": "object",
+            "properties": {
+                "text": {"type": "string", "description": "The text to classify"},
+                "categories": {"type": "string", "description": "Comma-separated categories (default: positive,negative,neutral)"},
+            },
+            "required": ["text"],
+        },
+        callable=tool_classify,
+    ))
+
+    registry.register(ToolDefinition(
+        name="summarize",
+        description="Summarize text into a given number of sentences.",
+        parameters={
+            "type": "object",
+            "properties": {
+                "text": {"type": "string", "description": "The text to summarize"},
+                "sentences": {"type": "integer", "description": "Number of sentences (default 3)"},
+            },
+            "required": ["text"],
+        },
+        callable=tool_summarize,
+    ))
+
+    registry.register(ToolDefinition(
+        name="extract",
+        description="Extract structured data from text: emails, phone numbers, URLs, dates, names.",
+        parameters={
+            "type": "object",
+            "properties": {
+                "text": {"type": "string", "description": "The text to extract from"},
+                "types": {"type": "string", "description": "Comma-separated types to extract (default: email,phone,url)"},
+            },
+            "required": ["text"],
+        },
+        callable=tool_extract,
+    ))
+
+    registry.register(ToolDefinition(
+        name="regex",
+        description="Generate a regex pattern from a natural language description.",
+        parameters={
+            "type": "object",
+            "properties": {
+                "description": {"type": "string", "description": "Natural language description of what the regex should match"},
+            },
+            "required": ["description"],
+        },
+        callable=tool_regex,
+    ))
+
+    registry.register(ToolDefinition(
+        name="sql",
+        description="Generate a SQL query from a natural language description.",
+        parameters={
+            "type": "object",
+            "properties": {
+                "description": {"type": "string", "description": "Natural language description of the query"},
+                "dialect": {"type": "string", "description": "SQL dialect: sqlite, mysql, or postgresql (default: sqlite)"},
+            },
+            "required": ["description"],
+        },
+        callable=tool_sql,
     ))
 
 
