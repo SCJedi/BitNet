@@ -22,7 +22,7 @@ LLAMA_SERVER_PORT = int(os.environ.get("LLAMA_PORT", "8080"))
 
 # ── llama-server settings ─────────────────────────────────────────────────
 GPU_LAYERS = int(os.environ.get("GPU_LAYERS", "99"))
-CONTEXT_SIZE = int(os.environ.get("CONTEXT_SIZE", "65536"))
+CONTEXT_SIZE = int(os.environ.get("CONTEXT_SIZE", "131072"))
 THREADS = int(os.environ.get("THREADS", "4"))
 
 # ── KV cache quantization ──────────────────────────────────────────────────
