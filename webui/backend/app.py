@@ -60,12 +60,15 @@ async def start_llama_server():
         "--port", str(config.LLAMA_SERVER_PORT),
         "-rea", "off",
         "--jinja",
+        "-ctk", config.KV_CACHE_TYPE_K,
+        "-ctv", config.KV_CACHE_TYPE_V,
     ]
 
     print(f"Starting llama-server...")
     print(f"  Model  : {config.MODEL_PATH}")
     print(f"  Context: {config.CONTEXT_SIZE}")
     print(f"  GPU    : {config.GPU_LAYERS} layers")
+    print(f"  KV type: K={config.KV_CACHE_TYPE_K}, V={config.KV_CACHE_TYPE_V}")
     print(f"  Port   : {config.LLAMA_SERVER_PORT} (internal)")
 
     llama_process = await asyncio.create_subprocess_exec(

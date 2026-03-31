@@ -22,8 +22,14 @@ LLAMA_SERVER_PORT = int(os.environ.get("LLAMA_PORT", "8080"))
 
 # ── llama-server settings ─────────────────────────────────────────────────
 GPU_LAYERS = int(os.environ.get("GPU_LAYERS", "99"))
-CONTEXT_SIZE = int(os.environ.get("CONTEXT_SIZE", "32768"))
+CONTEXT_SIZE = int(os.environ.get("CONTEXT_SIZE", "65536"))
 THREADS = int(os.environ.get("THREADS", "4"))
+
+# ── KV cache quantization ──────────────────────────────────────────────────
+# q4_0 = 4-bit KV cache (4x compression, proven lossless on Qwen3.5)
+# Options: f16 (default/no compression), q8_0 (2x), q4_0 (4x), q5_0 (3.2x)
+KV_CACHE_TYPE_K = os.environ.get("KV_CACHE_TYPE_K", "q4_0")
+KV_CACHE_TYPE_V = os.environ.get("KV_CACHE_TYPE_V", "q4_0")
 
 # ── Model override ────────────────────────────────────────────────────────
 MODEL_PATH = os.environ.get("MODEL_PATH", str(DEFAULT_MODEL))
