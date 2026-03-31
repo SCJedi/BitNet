@@ -89,15 +89,24 @@ class OpenAICompatibleProvider:
         async with httpx.AsyncClient(
             timeout=httpx.Timeout(300.0, connect=10.0)
         ) as client:
-            async with client.stream(
-                "POST",
-                f"{self.base_url}/chat/completions",
-                json=body,
-                headers=self._headers(),
-            ) as response:
-                response.raise_for_status()
-                async for chunk in response.aiter_bytes():
-                    yield chunk
+            try:
+                async with client.stream(
+                    "POST",
+                    f"{self.base_url}/chat/completions",
+                    json=body,
+                    headers=self._headers(),
+                ) as response:
+                    if response.status_code != 200:
+                        err_body = await response.aread()
+                        err_msg = err_body.decode("utf-8", errors="replace")[:500]
+                        yield _make_sse_error(f"Provider returned {response.status_code}: {err_msg}")
+                        return
+                    async for chunk in response.aiter_bytes():
+                        yield chunk
+            except httpx.ConnectError:
+                yield _make_sse_error(f"Cannot connect to {self.base_url}. Is the server running?")
+            except Exception as e:
+                yield _make_sse_error(f"Provider error: {e}")
 
 
 # ── Anthropic provider ───────────────────────────────────────────────────

@@ -198,8 +198,11 @@ async def chat_completions(request: Request):
         if key in body:
             extra[key] = body[key]
 
-    # Use tool-calling loop if tools are enabled
-    if tool_registry.has_enabled_tools():
+    # Use tool-calling loop if tools are enabled AND provider supports it
+    # Only the main local provider (with --jinja) reliably supports tool calling
+    # Skip tools for older servers (bitnet) and external APIs without tool support
+    supports_tools = provider_id == "local" or provider_id.startswith("openai") or provider_id.startswith("anthropic")
+    if tool_registry.has_enabled_tools() and supports_tools:
         async def stream_with_tools():
             async for chunk in chat_with_tools(
                 provider=provider,
