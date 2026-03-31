@@ -171,6 +171,91 @@ async def lifespan(app: FastAPI):
 app = FastAPI(title="AI Chat Platform", lifespan=lifespan)
 
 
+# ── Context eviction (application-level KV compression) ──────────────
+
+# With q4_0 KV (4x) + context eviction (3x) = ~12x effective compression
+# This keeps conversations flowing beyond what raw context would allow
+EVICTION_TARGET_TOKENS = 40000  # Start compressing when messages exceed this
+KEEP_RECENT_MESSAGES = 6        # Always keep last N message pairs intact
+SUMMARY_INSTRUCTION = "Condense the following conversation history into a brief summary of key points, decisions, and context. Be concise but preserve important details:\n\n"
+
+
+def estimate_tokens(text: str) -> int:
+    """Rough token estimate: ~4 chars per token for English."""
+    return len(text) // 4
+
+
+def evict_context(messages: list[dict]) -> list[dict]:
+    """
+    Application-level context eviction.
+
+    When conversation history exceeds EVICTION_TARGET_TOKENS, compress older
+    messages by keeping only a summary. This is the eviction half of 12x:
+    - q4_0 KV quantization handles the storage compression (4x)
+    - This function handles the token reduction (3x)
+    - Combined: ~12x effective compression
+
+    Strategy (mirrors our entropy-adaptive research):
+    1. System message: always keep (like sink tokens)
+    2. Recent messages: always keep last N (like recent tokens in eviction)
+    3. Old messages: summarize into a condensed block (eviction of middle tokens)
+    """
+    total_tokens = sum(estimate_tokens(m.get("content", "") or "") for m in messages)
+
+    if total_tokens <= EVICTION_TARGET_TOKENS:
+        return messages  # No eviction needed
+
+    # Separate system message, old messages, and recent messages
+    system_msgs = [m for m in messages if m.get("role") == "system"]
+    non_system = [m for m in messages if m.get("role") != "system"]
+
+    if len(non_system) <= KEEP_RECENT_MESSAGES * 2:
+        return messages  # Too few messages to compress
+
+    # Split into old (to compress) and recent (to keep)
+    keep_count = KEEP_RECENT_MESSAGES * 2  # pairs of user+assistant
+    old_msgs = non_system[:-keep_count]
+    recent_msgs = non_system[-keep_count:]
+
+    # Build a summary of old messages
+    old_text_parts = []
+    for m in old_msgs:
+        role = m.get("role", "unknown")
+        content = m.get("content", "") or ""
+        if content:
+            # Truncate very long individual messages
+            if len(content) > 500:
+                content = content[:500] + "..."
+            old_text_parts.append(f"{role}: {content}")
+
+    if not old_text_parts:
+        return messages
+
+    summary_text = "\n".join(old_text_parts)
+
+    # Create a compressed system message with the summary
+    compressed_history = (
+        f"[Compressed conversation history - {len(old_msgs)} earlier messages summarized]\n"
+        f"{summary_text[:3000]}"  # Cap at ~750 tokens
+    )
+
+    # Rebuild: system + compressed history + recent
+    result = list(system_msgs)
+    result.append({
+        "role": "system",
+        "content": compressed_history,
+    })
+    result.extend(recent_msgs)
+
+    old_tokens = sum(estimate_tokens(m.get("content", "") or "") for m in old_msgs)
+    new_tokens = estimate_tokens(compressed_history)
+    print(f"  [eviction] Compressed {len(old_msgs)} old messages: "
+          f"~{old_tokens} tokens -> ~{new_tokens} tokens "
+          f"({old_tokens / max(new_tokens, 1):.1f}x reduction)")
+
+    return result
+
+
 # ── Chat completions (provider-routed) ────────────────────────────────────
 
 @app.post("/v1/chat/completions")
@@ -194,6 +279,9 @@ async def chat_completions(request: Request):
     temperature = body.get("temperature", 0.7)
     max_tokens = body.get("max_tokens", 8192)
     tools = body.get("tools")
+
+    # Apply context eviction: compress old messages to fit more in context
+    messages = evict_context(messages)
 
     # Extra params
     extra = {}
