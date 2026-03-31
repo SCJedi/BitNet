@@ -1,0 +1,47 @@
+{
+  "benchmark": "production_12x",
+  "timestamp": "2026-03-31 12:43:20",
+  "model": "Qwen3.5-9B-Q4_K_M",
+  "gpu": "RTX 3060 12GB",
+  "runs_per_test": 3,
+  "results_f16": {
+    "Short (2-turn)": {
+      "prompt_tokens": 30,
+      "gen_per_sec": 48.20737465323426,
+      "prompt_per_sec": 437.9144031826358,
+      "completion_tokens": 48.0
+    },
+    "Medium (8-turn)": {
+      "prompt_tokens": 260,
+      "gen_per_sec": 47.029954352610424,
+      "prompt_per_sec": 498.6544144416992,
+      "completion_tokens": 200.0
+    },
+    "Long (20+ turn)": {
+      "prompt_tokens": 2296,
+      "gen_per_sec": 45.906587274507366,
+      "prompt_per_sec": 587.4156236650483,
+      "completion_tokens": 128.0
+    }
+  },
+  "results_q4": {
+    "Short (2-turn)": {
+      "prompt_tokens": 30,
+      "gen_per_sec": 47.03814290658045,
+      "prompt_per_sec": 431.677456100003,
+      "completion_tokens": 71.0
+    },
+    "Medium (8-turn)": {
+      "prompt_tokens": 260,
+      "gen_per_sec": 45.820676775403676,
+      "prompt_per_sec": 500.96039312722957,
+      "completion_tokens": 193.0
+    },
+    "Long (20+ turn)": {
+      "prompt_tokens": 2296,
+      "gen_per_sec": 45.84789423693834,
+      "prompt_per_sec": 572.1699267548114,
+      "completion_tokens": 127.0
+    }
+  }
+}
