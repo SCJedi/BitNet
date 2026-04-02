@@ -22,6 +22,11 @@ import os
 from pathlib import Path
 from typing import Optional
 
+# Must add CUDA DLLs to PATH BEFORE any llama_cpp imports
+_cuda_bin = r"C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v12.6\bin"
+if os.path.exists(_cuda_bin) and _cuda_bin not in os.environ.get("PATH", ""):
+    os.environ["PATH"] = _cuda_bin + os.pathsep + os.environ.get("PATH", "")
+
 # Add project root to path
 PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent
 
@@ -32,6 +37,7 @@ FastAPI = None
 
 def create_app():
     """Create the FastAPI app with the eviction-enabled model."""
+    import os
     import uvicorn as _uvicorn
     from fastapi import FastAPI, Request
     from fastapi.responses import StreamingResponse, JSONResponse
@@ -41,9 +47,9 @@ def create_app():
 
     # ── Configuration ─────────────────────────────────────────────────────
     MODEL_PATH = str(PROJECT_ROOT / "models" / "qwen3.5-9b" / "Qwen3.5-9B-Q4_K_M.gguf")
-    N_CTX = 8192            # Context window (CPU-only, keep reasonable)
-    N_GPU_LAYERS = 0        # CPU-only (llama-cpp-python built without CUDA)
-    N_THREADS = 8           # Use more CPU threads
+    N_CTX = 8192            # Context window (eviction extends effective context)
+    N_GPU_LAYERS = 99       # Full GPU (CUDA build)
+    N_THREADS = 4
     EVICTION_THRESHOLD = 0.75  # Start evicting at 75% KV cache usage
     KEEP_RATIO = 0.50       # Keep 50% of tokens after eviction (2x compression per round)
     SINK_TOKENS = 4         # Always keep first N tokens (attention sinks)
